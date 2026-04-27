@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/glp/tutorial-specify/checkpoint.schema.json",
+  "title": "Tutorial-Specify Checkpoint",
+  "description": "On-disk state file at specs/<NNN>-tutorial-chNN/.checkpoint.json. Written atomically (write-temp-then-rename) after every meaningful step. See plan.md Decision 4 and data-model.md > Checkpoint.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "chapter_id",
+    "started_at",
+    "last_updated_at",
+    "inputs",
+    "tutorial_mode",
+    "completed_steps",
+    "pending_steps"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Semver of this checkpoint schema. Bumped only when the schema changes incompatibly.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "chapter_id": {
+      "type": "string",
+      "description": "Chapter identifier, e.g., 'ch01' through 'ch13'.",
+      "pattern": "^ch(0[1-9]|1[0-3])$"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp when this checkpoint was first created."
+    },
+    "last_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp when this checkpoint was last written."
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Map of input file path -> SHA-256 content-hash. Verified on --resume; mismatch -> abort per FR-019.",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "book_page_to_pdf_page": {
+      "type": "object",
+      "description": "Map of book page number -> PDF page number. Built once per PDF content-hash per Decision 5.",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "tutorial_mode": {
+      "type": "string",
+      "enum": ["cohesive-synthesis", "block-focused", "multi-actor-distillation"],
+      "description": "Read from the **Mode**: header in chNN_plan.md per FR-007."
+    },
+    "extracted_blocks": {
+      "type": "array",
+      "description": "Code-bearing extractions from GLP_ART.pdf for this chapter.",
+      "items": {
+        "type": "object",
+        "required": ["block_id", "book_pages", "text", "parse_status"],
+        "additionalProperties": false,
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "description": "Stable per-PDF block id, e.g., 'ch04-pp37-block-01'."
+          },
+          "book_pages": {
+            "type": "string",
+            "description": "Citation form, e.g., 'book pp 37-40 §4.3'."
+          },
+          "program_id": {
+            "type": ["string", "null"],
+            "description": "e.g., 'Program 1.1' if the book labels it; null otherwise."
+          },
+          "text": {
+            "type": "string",
+            "description": "Extracted code, indentation preserved."
+          },
+          "pdf_pages": {
+            "type": "array",
+            "description": "Internal use only; never appears in spec output (FR-003).",
+            "items": { "type": "integer", "minimum": 1 }
+          },
+          "parse_status": {
+            "type": "string",
+            "enum": ["pending", "passed", "failed"]
+          }
+        }
+      }
+    },
+    "repl_results": {
+      "type": "array",
+      "description": "Per-block REPL parse-check results.",
+      "items": {
+        "type": "object",
+        "required": ["block_id", "passed"],
+        "additionalProperties": false,
+        "properties": {
+          "block_id": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "repl_stdout": { "type": "string" },
+          "repl_stderr": { "type": "string" }
+        }
+      }
+    },
+    "completed_steps": {
+      "type": "array",
+      "description": "Ordered list of step names that have completed successfully.",
+      "items": { "type": "string" }
+    },
+    "pending_steps": {
+      "type": "array",
+      "description": "Ordered list of step names that have not yet started.",
+      "items": { "type": "string" }
+    },
+    "current_step": {
+      "type": ["string", "null"],
+      "description": "Name of the step currently in progress (or null if idle/terminated)."
+    },
+    "terminated_with": {
+      "type": ["string", "null"],
+      "enum": [null, "success", "aborted"]
+    },
+    "abort_reason": {
+      "type": ["string", "null"],
+      "description": "Set when terminated_with == 'aborted'; precise human-readable reason."
+    }
+  }
+}
