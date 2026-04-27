@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tutorial-specify"
+version = "0.1.0"
+description = "Generate speckit-compliant specs from olamni/tutorial chapter plans, sourcing code-bearing content from GLP_ART.pdf"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [{ name = "GLP Project" }]
+dependencies = [
+    "pdfplumber>=0.11",
+    "filelock>=3.13",
+    "pyyaml>=6.0",
+    "jsonschema>=4.21",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-timeout>=2.2",
+    "reportlab>=4.0",
+]
+
+[project.scripts]
+tutorial-specify = "tutorial_specify.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+timeout = 120
