@@ -13,12 +13,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from tutorial_specify.errors import MissingModeError, PlanDeficiencyError
-from tutorial_specify.modes import VALID_MODES
+
+# _VALID_MODES is imported lazily inside the validator to avoid the circular
+# import: modes/*.py needs ChapterPlan from this module, which would import
+# modes at module-load time and fail with PartiallyInitializedModule.
+_VALID_MODES = ("cohesive-synthesis", "block-focused", "multi-actor-distillation")
 
 
 # Regexes
 _MODE_LINE = re.compile(r"^\s*\*\*Mode\*\*\s*:\s*([a-z\-]+)\s*$")
-_FILE_ROW = re.compile(r"^- ([^:]+\.glp)\s*:\s*(.+?)\.\s*$")
+_FILE_ROW = re.compile(r"^- ([^:\s]+\.glp)\s*:\s*(.+)$")
 _USE_CASE_ROW = re.compile(r"^- ([a-z0-9\-]+/)\s*:\s*(.+?)\.\s*$")
 _SOURCE_ROW = re.compile(r"^\s*(\d+)\.\s+(.*\S)\s*$")
 
@@ -46,7 +50,7 @@ class ChapterPlan:
 
     path: Path
     chapter_id: str  # e.g. "ch04"
-    mode: str  # one of VALID_MODES
+    mode: str  # one of _VALID_MODES
     shared_block: list[str] = field(default_factory=list)
     files: list[FileRow] = field(default_factory=list)
     use_cases: list[UseCase] = field(default_factory=list)
@@ -149,10 +153,10 @@ def parse_chapter_plan(path: Path, chapter_id: str) -> ChapterPlan:
             f"Add a header line of the form: **Mode**: <cohesive-synthesis | "
             f"block-focused | multi-actor-distillation>"
         )
-    if mode not in VALID_MODES:
+    if mode not in _VALID_MODES:
         raise MissingModeError(
             f"chapter plan {path} has invalid mode {mode!r}; valid modes: "
-            f"{sorted(VALID_MODES)}"
+            f"{sorted(_VALID_MODES)}"
         )
 
     # Detect file paths embedded in use-case scopes (e.g., "{self,agent,network,actors,boot}.glp")

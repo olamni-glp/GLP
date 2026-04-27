@@ -81,7 +81,8 @@ def _functional_requirements(
             f"`chNN/{play_name}/network.glp` MUST wire the message routing; "
             f"`chNN/{play_name}/actors.glp` MUST contain deterministic GLP-side "
             f"actor scripts so the play runs headless in the REPL; "
-            f"`chNN/{play_name}/boot.glp` MUST orchestrate the spawn order."
+            f"`chNN/{play_name}/boot.glp` MUST orchestrate the spawn order. "
+            f"({citations})"
         )
         fr_n += 1
         if "flutter" in uc.scope.lower() or "main_olamni" in uc.scope.lower():
@@ -90,7 +91,8 @@ def _functional_requirements(
                 f"`glp_multiagent/lib/main_olamni_chNN_{play_name}.dart` MUST "
                 f"orchestrate one Dart isolate per agent and the per-actor UI "
                 f"panels, derived from the chapter plan's named template (see "
-                f"the chapter plan's [sN] references for the template path)."
+                f"the chapter plan's [sN] references for the template path). "
+                f"({citations})"
             )
             fr_n += 1
     lines.append(

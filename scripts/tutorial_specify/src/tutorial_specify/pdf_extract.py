@@ -202,7 +202,9 @@ def format_book_pages_citation(book_pages: tuple[int, ...], section_id: str | No
     if not book_pages:
         if section_id and program_id:
             return f"§{section_id}, {program_id}"
-        return section_id or program_id or "(uncited)"
+        if section_id:
+            return f"§{section_id}"
+        return program_id or "(uncited)"
 
     if len(book_pages) == 1:
         page_part = f"book p {book_pages[0]}"
