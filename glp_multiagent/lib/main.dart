@@ -369,20 +369,25 @@ class _CoordinatorScreenState extends State<CoordinatorScreen> {
   ReplPlayRunner? _playRunner;
 
   /// Resolve the GLP repo root from the glp_multiagent working directory.
-  /// The app may run from the repo (development) or from a bundle (release).
+  /// Walks up the cwd ancestry looking for a directory containing
+  /// `glp_runtime` as a child. Works for both `flutter run` (cwd =
+  /// glp_multiagent) and the standalone Release exe (cwd = build/.../Release).
   static String _resolveRepoRoot() {
-    // In development, cwd is glp_multiagent/ and repo root is ..
-    // Check for the glp_runtime sibling directory as a landmark.
-    final devRoot = Directory.current.parent.path;
-    if (Directory('$devRoot/glp_runtime').existsSync()) {
-      return devRoot;
+    Directory? d = Directory.current;
+    for (int i = 0; i < 8 && d != null; i++) {
+      if (Directory('${d.path}/glp_runtime').existsSync()) {
+        return d.path;
+      }
+      final parent = d.parent;
+      if (parent.path == d.path) break;
+      d = parent;
     }
     // Fallback: try absolute path (Udi's machine)
     const fallback = '/Users/udi/Grassroots/GLP';
     if (Directory('$fallback/glp_runtime').existsSync()) {
       return fallback;
     }
-    return devRoot; // best guess
+    return Directory.current.parent.path; // best guess
   }
 
   Future<void> _runPlay(int playNumber) async {

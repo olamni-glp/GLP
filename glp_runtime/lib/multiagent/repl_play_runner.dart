@@ -128,6 +128,7 @@ class ReplPlayRunner {
         dartExe,
         ['run', 'bin/glp_repl.dart'],
         workingDirectory: runtimeDir,
+        runInShell: Platform.isWindows,
       );
       _process = process;
       onLog?.call('REPL: process started (pid=${process.pid})');
@@ -162,7 +163,11 @@ class ReplPlayRunner {
       onDone?.call(exitCode);
     } catch (e) {
       _process = null;
-      onError?.call('REPL: failed to start: $e');
+      final hint = e is ProcessException
+          ? ' [executable=${e.executable}, args=${e.arguments}, errorCode=${e.errorCode}]'
+          : '';
+      onError?.call(
+          'REPL: failed to start: dartExe=$dartExe runtimeDir=$runtimeDir error=$e$hint');
     }
   }
 
@@ -188,20 +193,38 @@ class ReplPlayRunner {
     onOutput?.call(PlayOutput(agentId, kind, content));
   }
 
-  /// Find the dart executable. Prefer the one next to the Flutter SDK,
+  /// Find the dart executable. Prefer the one next to a known Flutter SDK,
   /// fall back to PATH.
   String _findDart() {
-    // Check common macOS Flutter/Dart locations
-    final candidates = [
-      '/usr/local/bin/dart',
-      '${Platform.environment['HOME']}/flutter/bin/dart',
-      '${Platform.environment['HOME']}/development/flutter/bin/dart',
-      '${Platform.environment['HOME']}/.pub-cache/bin/dart',
+    final isWindows = Platform.isWindows;
+    final exe = isWindows ? 'dart.exe' : 'dart';
+    final home = Platform.environment['HOME'] ?? '';
+    final userProfile = Platform.environment['USERPROFILE'] ?? '';
+    final localAppData = Platform.environment['LOCALAPPDATA'] ?? '';
+    final candidates = <String>[
+      // macOS / Linux
+      '/usr/local/bin/$exe',
+      '$home/flutter/bin/cache/dart-sdk/bin/$exe',
+      '$home/development/flutter/bin/cache/dart-sdk/bin/$exe',
+      '$home/.pub-cache/bin/$exe',
+      // Windows — Flutter SDK dart.exe (preferred — direct, no shim)
+      'C:/src/flutter/bin/cache/dart-sdk/bin/$exe',
+      'C:/flutter/bin/cache/dart-sdk/bin/$exe',
+      'C:/tools/flutter/bin/cache/dart-sdk/bin/$exe',
+      '$userProfile/flutter/bin/cache/dart-sdk/bin/$exe',
+      '$userProfile/dev/flutter/bin/cache/dart-sdk/bin/$exe',
+      // Windows — Flutter dart.bat shim (works with runInShell:true)
+      if (isWindows) 'C:/src/flutter/bin/dart.bat',
+      if (isWindows) 'C:/flutter/bin/dart.bat',
+      if (isWindows) '$userProfile/flutter/bin/dart.bat',
+      // Windows — pub cache and WinGet-installed Dart SDK
+      if (isWindows) '$localAppData/Pub/Cache/bin/$exe',
+      '$userProfile/AppData/Local/Microsoft/WinGet/Packages/Google.DartSDK_Microsoft.Winget.Source_8wekyb3d8bbwe/dart-sdk/bin/$exe',
     ];
     for (final path in candidates) {
-      if (File(path).existsSync()) return path;
+      if (path.isNotEmpty && File(path).existsSync()) return path;
     }
     // Fall back to PATH (works from terminal, may not from app bundle)
-    return 'dart';
+    return exe;
   }
 }
