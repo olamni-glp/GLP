@@ -212,7 +212,7 @@ void main() async {
           }
 
           if (!sourceFile.existsSync()) {
-            print('Error: File not found: ${sourceFile.path}');
+            print('Error loading ${sourceFile.path}: File not found');
             continue;
           }
 
