@@ -1,3 +1,5 @@
 glp_runtime/glp_repl_new
+glp_runtime/glp_repl
+glp_runtime/glp_repl.exe
 glp_runtime/build/
 .DS_Store

@@ -21,7 +21,7 @@
 ```
 Program 1.1: Fair Stream Merger
 
-merge([X|Xs],Ys,[X?|Zs]) :- merge(Ys?,Xs?,Zs).
+merge([X|Xs],Ys,[X?|Zs?]) :- merge(Ys?,Xs?,Zs).
 merge(Xs,[Y|Ys],[Y?|Zs?]) :- merge(Xs?,Ys?,Zs).
 merge([],[],[]).
 ```

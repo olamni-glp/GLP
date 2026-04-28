@@ -25,12 +25,24 @@ set -e
 
 DART=${DART:-$(which dart 2>/dev/null || echo "/home/user/dart-sdk/bin/dart")}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GLP_DIR="$SCRIPT_DIR/.."
-GLP_RUNTIME="$GLP_DIR/glp_runtime"
-TYPED="$GLP_DIR/programs/tests/typed"
-BOOK="$GLP_DIR/programs/typed_book"
-TC_DIR="$GLP_RUNTIME/test/programs/typechecker"
-MODED="$GLP_RUNTIME/test/programs/moded_types"
+
+# to_repl_path: convert an MSYS / Git-Bash style absolute path (e.g. /d/foo
+# or /tmp/foo) to a form the Windows-native Dart REPL can open via File().
+# Identity on platforms without cygpath (Linux, macOS).
+to_repl_path() {
+    if command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "$1"
+    else
+        printf "%s" "$1"
+    fi
+}
+
+GLP_DIR="$(to_repl_path "$SCRIPT_DIR/..")"
+GLP_RUNTIME="$(to_repl_path "$GLP_DIR/glp_runtime")"
+TYPED="$(to_repl_path "$GLP_DIR/programs/tests/typed")"
+BOOK="$(to_repl_path "$GLP_DIR/programs/typed_book")"
+TC_DIR="$(to_repl_path "$GLP_RUNTIME/test/programs/typechecker")"
+MODED="$(to_repl_path "$GLP_RUNTIME/test/programs/moded_types")"
 
 cd "$GLP_RUNTIME"
 
@@ -1092,8 +1104,10 @@ TMP_GUARD="${TMP_GUARD}.glp"
 cat > "$TMP_GUARD" << 'TMPEOF'
 bad_guard(X?) :- true | X = done.
 TMPEOF
+# Convert /tmp/... path to a form the Windows REPL can open
+TMP_GUARD_REPL="$(to_repl_path "$TMP_GUARD")"
 
-guard_out=$(echo -e "$TMP_GUARD\n:quit" | $DART run "$REPL" 2>&1)
+guard_out=$(echo -e "$TMP_GUARD_REPL\n:quit" | $DART run "$REPL" 2>&1)
 rm -f "$TMP_GUARD"
 
 if echo "$guard_out" | grep -q '"true" is not a guard'; then
