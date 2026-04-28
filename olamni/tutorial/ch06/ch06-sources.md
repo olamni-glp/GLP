@@ -1,12 +1,37 @@
-# Ch 6 Sources
+# Ch 6 Sources — Typed Programming
 
-The book draft has only a TOC page for ch 6 (book p 53, §6.1–§6.5 as headings, no body). Material must be collected from elsewhere in the book and the `typed_book/` corpus per TOC heading.
+**PDF**: `GLP_ART.pdf`, book p 53 (PDF p 65). 
 
-1. PDF book p 53 — TOC headings only (§6.1 Difference Lists; §6.2 Quicksort; §6.3 Equators: Emergency Brake; §6.4 Bidirectional Communication; §6.5 Buffered Communication).
-2. `programs/typed_book/recursive/list_processing/dl_append.glp` — §6.1 difference lists.
-3. PDF book §5.6 "Complete Example: Typed Quicksort" (book p 51) + `programs/typed_book/recursive/list_processing/quicksort.glp` — §6.2.
-4. `docs/naming-conventions.md` (Equators table) + `programs/typed_book/meta/enhanced/abortable_meta.glp` — §6.3 equator mechanism.
-5. PDF book §5.5 response-slot pattern + `programs/typed_book/streams/` — §6.4 bidirectional communication.
-6. PDF book §4.2 "Buffered Communication / Sliding Window Buffer" (book p 34: `bb`, `bb_test`) — §6.5.
-7. `../charter.md`
-8. `ch06_tutorial.md`
+## ⚠ STATUS: CHAPTER IS A STUB IN THE BOOK
+
+The PDF for Ch 6 contains **only the chapter title and section headings** — no body text, no Programs:
+
+> **Chapter 6: Typed Programming**
+> This chapter presents advanced GLP programming techniques that build on the moded type system introduced in Chapter 5.
+>
+> 6.1 Difference Lists
+> 6.2 Quicksort
+> 6.3 Equators: Emergency Brake
+> 6.4 Bidirectional Communication
+> 6.5 Buffered Communication
+
+That's the entire chapter as published in `GLP_ART.pdf` (single page, p 53). All five sections are heading-only — no code blocks, no prose.
+
+## Code-block index
+**EMPTY** — there are no Programs in the book for Ch 6.
+
+## Tutorial mode
+cohesive-synthesis (charter assignment) — but the chapter cannot be specified yet because the source is not written.
+
+## Required action before /tutorial-specify can run
+Either:
+1. Wait for the book Ch 6 to be filled in by the author, then re-scan and rewrite this file; OR
+2. Reuse the typed Programs from Ch 5 (Quicksort §5.6) and §4.2 (buffered communication, bidirectional channels) as substitutes — but this is **synthesis from related chapters**, not extraction from Ch 6 itself, and must be acknowledged as such.
+
+## Companion repo references (anticipated, by section title)
+- §6.1 Difference Lists → `programs/typed_book/recursive/list_processing/` (difference-list idiom).
+- §6.2 Quicksort → `programs/typed_book/recursive/list_processing/quicksort.glp` (already covered in Ch 5).
+- §6.3 Equators → no clear analogue in repo yet.
+- §6.4 Bidirectional Communication → `programs/typed_book/streams/buffered_communication/` (channel-based bidir).
+- §6.5 Buffered Communication → `programs/typed_book/streams/buffered_communication/bb*.glp` (Ch 4 sliding-window buffer + typed variant).
+- `../charter.md`

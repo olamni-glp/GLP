@@ -1,11 +1,21 @@
-# Ch 13 Sources (bonus, Python actors)
+# Ch 13 Sources — Bonus: Python Actors
 
-Scenario per Udi: 3 AI engineers (parents) each with 3 named AI agents (children) collaborating on shared work. Apply the parent-children CSSN protocol with a purpose/context-scoped authorization step.
+**NOT IN GLP_ART.pdf** — this chapter is the user-defined bonus per `charter.md` §3:
 
-1. `programs/cssn_modules/` (parent-children CSSN agent + boot + ui modules — primary protocol source).
-2. `programs/typed_book/social_networks/play_child_safe.glp` (parent-approval play; embedded response-variable approval pattern).
-3. `programs/typed_book/social_networks/group_formation.glp`, `group_messaging.glp` (for "specific groups of agents" authorization scope).
-4. `glp_multiagent/lib/main_cssn_village.dart`, `glp_multiagent/lib/main_cssg_mad_modules.dart` (Dart-side multi-isolate templates — adapt to 3+9 isolate layout).
-5. `glp_multiagent/lib/mad_router.dart`, `glp_multiagent/lib/isolate_protocol.dart` (model for the line-delimited JSON Python-bridge protocol).
-6. `ch13_tutorial.md`
-7. `../charter.md`
+> "Bonus ch 13: Python actors instead of Dart/Flutter; bridge over JSON-line stdin/stdout subprocess. Scenario TBD with Udi."
+
+## Tutorial mode
+multi-actor-distillation (use-case-driven, Python-actor flavour).
+
+## Programs / scenario
+TBD — to be specified by Udi. Scenario, choice of protocol (GC, CSSN, consensus), and target use case are not yet decided.
+
+## Companion repo references
+- Charter §3 (Python bonus chapter principle).
+- The chosen base protocol's repo subtree (e.g., `programs/typed_book/cssn/` or `cryptocurrencies/`) once scenario is fixed.
+- `../charter.md`
+
+## Required clarifications before /tutorial-specify can run
+- Pick the target protocol (CSSN play? Bonds? GC? Consensus?).
+- Define the JSON-line bridge schema (commands in, events out).
+- Decide whether actors connect to an existing Dart REPL run or a Python harness.
