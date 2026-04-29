@@ -11,6 +11,39 @@ import 'package:glp_runtime/multiagent/isolate_manager.dart';
 import 'package:glp_runtime/runtime/scheduler.dart';
 import 'package:glp_runtime/runtime/terms.dart' as rt;
 
+/// Resolve the absolute path to programs/self.glp by walking up from
+/// Platform.script until a directory named `glp_runtime` is found, then
+/// taking its parent (which is the GLP repo root) and joining `programs/self.glp`.
+///
+/// This handles all known entry-point shapes:
+///   - JIT:    glp_runtime/bin/glp_repl.dart       (script's grandparent is repo root)
+///   - Kernel: glp_runtime/.dart_tool/repl.dill    (script's grandparent is repo root)
+///   - AOT:    glp_runtime/glp_repl.exe            (script's parent is repo root)
+///   - Any other location under glp_runtime/       (walks up until found)
+///
+/// Throws StateError if `glp_runtime` cannot be located in the script's ancestor
+/// chain — that indicates a serious deployment defect (executable copied outside
+/// the project tree).
+String _resolveRootSelfGlpPath() {
+  final scriptPath = Platform.script.toFilePath();
+  Directory dir = File(scriptPath).parent;
+  // Walk up to a stable terminating condition.
+  while (dir.path != dir.parent.path) {
+    final basename = dir.path.split(Platform.pathSeparator).where((s) => s.isNotEmpty).last;
+    if (basename == 'glp_runtime') {
+      final repoRoot = dir.parent;
+      return File('${repoRoot.path}${Platform.pathSeparator}programs${Platform.pathSeparator}self.glp')
+          .absolute.path;
+    }
+    dir = dir.parent;
+  }
+  throw StateError(
+      'GLP REPL could not locate the enclosing glp_runtime/ directory '
+      'starting from Platform.script = $scriptPath. The REPL must run from '
+      'within a checkout of the GLP repository (the .dart source, the .dill '
+      'snapshot, or the compiled .exe must all reside under glp_runtime/).');
+}
+
 void main() async {
   final gitCommit = await _getGitCommit();
   final buildTime = '2026-02-01 (GlpEngine refactor)';
@@ -29,12 +62,15 @@ void main() async {
   print('Commands: :quit, :help, :trace, :debug, :limit, :activate, :boot');
   print('');
 
-  // Resolve programs/self.glp relative to this script's location.
-  // Platform.script points to glp_runtime/bin/glp_repl.dart.
-  // Two levels up (../../) reaches the GLP repo root; then programs/self.glp.
-  final rootSelfGlpPath = Platform.script.resolve('../../programs/self.glp').toFilePath();
+  // Resolve programs/self.glp by anchoring on the enclosing glp_runtime/ directory.
+  // This is entry-point-agnostic: works for the .dart source under bin/, the kernel
+  // snapshot under .dart_tool/, and the AOT-compiled .exe directly under glp_runtime/.
+  // The bug it fixes: a literal `../../programs/self.glp` overshoots by one directory
+  // when invoked through the AOT exe (which lives one level shallower than the source).
+  // See test/aot_self_glp_path_test.dart for the regression coverage.
+  final rootSelfGlpPath = _resolveRootSelfGlpPath();
   final engine = GlpEngine(rootSelfGlpPath: rootSelfGlpPath);
-  print('Loaded root self.glp');
+  print('Loaded root self.glp from: $rootSelfGlpPath');
   print('');
 
   while (true) {
