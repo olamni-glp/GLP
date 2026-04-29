@@ -21,6 +21,7 @@
 #   O - Bonds V2 Multi-Isolate Tests (dart test, one isolate per agent)
 #   P - Module Boundary Enforcement Tests (exported vs private procedures)
 #   Q - AOT REPL exe regression smoke (root self.glp path resolution)
+#   R - Stale-binary warning regression (Build line truthfulness)
 
 set -e
 
@@ -1824,6 +1825,35 @@ else
     echo "$AOT_SMOKE_RESULT" | tail -20
     PASS=$((PASS + AOT_SMOKE_PASSED))
     FAIL=$((FAIL + AOT_SMOKE_FAILED))
+fi
+echo ""
+
+# =============================================================================
+# SECTION R: STALE-BINARY WARNING REGRESSION
+# =============================================================================
+# Regression coverage for the misleading-Build-line bug where the AOT exe's
+# banner showed the current git HEAD (computed at REPL startup) instead of
+# the commit baked into the binary at compile time. Delegated to
+# test/run_stale_binary_warning.sh which builds three exes (fake-stale,
+# no-define, current) and asserts the warning fires only when warranted.
+echo "=== Section R: Stale-binary warning regression ==="
+echo ""
+set +e
+STALE_RESULT=$(bash "$SCRIPT_DIR/run_stale_binary_warning.sh" 2>&1)
+STALE_EXIT=$?
+STALE_PASSED=$(echo "$STALE_RESULT" | grep -c "^  PASS:" || true)
+STALE_FAILED=$(echo "$STALE_RESULT" | grep -c "^  FAIL:" || true)
+STALE_PASSED=${STALE_PASSED:-0}
+STALE_FAILED=${STALE_FAILED:-0}
+set -e
+if [ "$STALE_EXIT" -eq 0 ]; then
+    echo "  PASS: All $STALE_PASSED stale-binary checks passed"
+    PASS=$((PASS + STALE_PASSED))
+else
+    echo "  FAIL: $STALE_FAILED stale-binary check(s) failed ($STALE_PASSED passed)"
+    echo "$STALE_RESULT" | tail -20
+    PASS=$((PASS + STALE_PASSED))
+    FAIL=$((FAIL + STALE_FAILED))
 fi
 echo ""
 

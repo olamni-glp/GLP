@@ -44,18 +44,59 @@ String _resolveRootSelfGlpPath() {
       'snapshot, or the compiled .exe must all reside under glp_runtime/).');
 }
 
+/// Commit the binary was BUILT from. Set at compile time via:
+///   dart compile exe ... --define=GLP_BUILD_COMMIT=$(git log -1 --format=%h\ %s)
+/// Defaults to 'unknown (rebuild with --define=GLP_BUILD_COMMIT=...)' so a stale
+/// binary is immediately obvious.
+const String _buildCommit = String.fromEnvironment(
+    'GLP_BUILD_COMMIT',
+    defaultValue: 'unknown (rebuild with --define=GLP_BUILD_COMMIT=...)');
+
+/// Read the modification time of the running binary (the .exe / .dill / .dart
+/// file that `Platform.script` points at). This is the wallclock the user can
+/// trust — it tells them WHEN this binary was actually built, regardless of
+/// what their git checkout currently says.
+String _getBinaryMTime() {
+  try {
+    final scriptPath = Platform.script.toFilePath();
+    final stat = FileStat.statSync(scriptPath);
+    return stat.modified.toIso8601String();
+  } catch (_) {
+    return 'unknown';
+  }
+}
+
 void main() async {
-  final gitCommit = await _getGitCommit();
-  final buildTime = '2026-02-01 (GlpEngine refactor)';
+  // The "Repo HEAD" line reports the current git checkout at REPL launch.
+  // The "Built from" line reports what was baked into THIS binary at compile
+  // time. If the two differ, the user is running a stale binary and should
+  // rebuild — this is the alarm that prevents the silent-stale-exe class of
+  // bug (see commit history for the AOT self.glp path-resolution incident).
+  final repoHeadCommit = await _getGitCommit();
+  final binaryMTime = _getBinaryMTime();
 
   print('╔════════════════════════════════════════╗');
   print('║  GLP REPL - With Type Checking         ║');
   print('╚════════════════════════════════════════╝');
   print('');
-  if (gitCommit != null) {
-    print('Build: $gitCommit');
+  print('Built from: $_buildCommit');
+  print('Built at:   $binaryMTime');
+  if (repoHeadCommit != null) {
+    print('Repo HEAD:  $repoHeadCommit');
+    // Detect stale binary: if the baked commit hash doesn't match the leading
+    // hash on the repo HEAD line, the user is running a binary that does not
+    // reflect the current checkout. Print a clear warning so the misleading-
+    // status mode (banner says "loaded" but binary is old) cannot recur.
+    final bakedHash = _buildCommit.split(' ').first;
+    final headHash = repoHeadCommit.split(' ').first;
+    if (bakedHash != 'unknown' && bakedHash != headHash) {
+      print('');
+      print('⚠ STALE BINARY: built from $bakedHash but repo HEAD is $headHash.');
+      print('  Rebuild: dart compile exe glp_runtime/bin/glp_repl.dart \\');
+      print('             --define=GLP_BUILD_COMMIT="\$(git log -1 --format=%h\\ %s)" \\');
+      print('             -o glp_runtime/glp_repl.exe');
+    }
   }
-  print('Compiled: $buildTime');
   print('Working directory: ${Directory.current.path}');
   print('');
   print('Input: filename.glp to load, or goal to execute');

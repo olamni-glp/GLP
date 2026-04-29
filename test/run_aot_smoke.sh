@@ -47,7 +47,8 @@ cd "$GLP_RUNTIME"
 SMOKE_EXE="$GLP_RUNTIME/glp_repl_smoke.exe"
 rm -f "$SMOKE_EXE"
 echo "Compiling AOT REPL exe for smoke test..."
-"$DART" compile exe bin/glp_repl.dart -o "$SMOKE_EXE" >/dev/null 2>&1
+BUILD_COMMIT="$(git -C "$GLP_DIR" log -1 --format='%h %s' 2>/dev/null || echo 'smoke-test')"
+"$DART" compile exe bin/glp_repl.dart --define=GLP_BUILD_COMMIT="$BUILD_COMMIT" -o "$SMOKE_EXE" >/dev/null 2>&1
 
 if [ ! -f "$SMOKE_EXE" ]; then
     echo "FAIL: AOT compilation produced no exe"
@@ -81,10 +82,18 @@ echo "=== Section Q: AOT REPL exe regression smoke ==="
 echo ""
 
 # Test 1: AOT exe must report loading self.glp from the CORRECT path
-# (under the repo root, not from the parent of the repo root).
-echo "--- AOT self.glp load path ---"
+# (under the repo root, not from the parent of the repo root) AND must
+# print build provenance (Built from / Built at) baked at compile time.
+echo "--- AOT self.glp load path + build provenance ---"
 output=$(printf ':quit\n' | "$SMOKE_EXE" 2>&1)
 check_aot "AOT exe loads self.glp from correct path" "Loaded root self.glp from:.*glp[/\\\\]programs[/\\\\]self.glp" "$output"
+check_aot "AOT exe reports baked Built from"        "Built from: $BUILD_COMMIT"  "$output"
+check_aot "AOT exe reports binary mtime"            "Built at:"                   "$output"
+# Stale-binary warning must NOT fire when build commit equals repo HEAD.
+if echo "$output" | grep -q "STALE BINARY"; then
+    echo "  FAIL: AOT exe spuriously reported STALE BINARY when build commit matches repo HEAD"
+    FAIL=$((FAIL + 1))
+fi
 
 # Test 2: AOT exe must successfully run ex-02 (uses := arithmetic from self.glp)
 echo ""
