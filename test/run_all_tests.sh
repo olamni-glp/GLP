@@ -20,6 +20,7 @@
 #   N - Bonds V2 Modules (project-directory loading, plays 1-12)
 #   O - Bonds V2 Multi-Isolate Tests (dart test, one isolate per agent)
 #   P - Module Boundary Enforcement Tests (exported vs private procedures)
+#   Q - AOT REPL exe regression smoke (root self.glp path resolution)
 
 set -e
 
@@ -1793,6 +1794,37 @@ check "public_proc(5,X) returns X=6" "X = 6" "$output"
 check_not "private_proc not callable from REPL" "X = 7" "$output"
 check "private_proc fails or not found" "not found\|failed\|Error" "$output"
 
+echo ""
+
+# =============================================================================
+# SECTION Q: AOT REPL EXE REGRESSION SMOKE
+# =============================================================================
+# Regression coverage for the ch02-era path-resolution bug where the AOT-
+# compiled REPL exe failed to load programs/self.glp because Platform.script
+# resolution overshoots when the .exe lives one directory shallower than the
+# .dart source. Delegated to test/run_aot_smoke.sh which builds a fresh exe
+# and asserts ex-02 + ex-03 produce their locked bindings.
+echo "=== Section Q: AOT REPL exe regression smoke ==="
+echo ""
+# Note: `|| true` and `set +e` guards needed because `grep -c` returns exit 1
+# when count is 0, which would trip the parent script's `set -e`.
+set +e
+AOT_SMOKE_RESULT=$(bash "$SCRIPT_DIR/run_aot_smoke.sh" 2>&1)
+AOT_SMOKE_EXIT=$?
+AOT_SMOKE_PASSED=$(echo "$AOT_SMOKE_RESULT" | grep -c "^  PASS:" || true)
+AOT_SMOKE_FAILED=$(echo "$AOT_SMOKE_RESULT" | grep -c "^  FAIL:" || true)
+AOT_SMOKE_PASSED=${AOT_SMOKE_PASSED:-0}
+AOT_SMOKE_FAILED=${AOT_SMOKE_FAILED:-0}
+set -e
+if [ "$AOT_SMOKE_EXIT" -eq 0 ]; then
+    echo "  PASS: All $AOT_SMOKE_PASSED AOT smoke checks passed"
+    PASS=$((PASS + AOT_SMOKE_PASSED))
+else
+    echo "  FAIL: $AOT_SMOKE_FAILED AOT smoke check(s) failed ($AOT_SMOKE_PASSED passed)"
+    echo "$AOT_SMOKE_RESULT" | tail -20
+    PASS=$((PASS + AOT_SMOKE_PASSED))
+    FAIL=$((FAIL + AOT_SMOKE_FAILED))
+fi
 echo ""
 
 # =============================================================================
