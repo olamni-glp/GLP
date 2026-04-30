@@ -1279,24 +1279,24 @@ Never ask Udi closed-form questions (multiple choice, yes/no, pick-from-list). O
 3. **If you encounter merge conflicts or unexpected changes from other sessions**, STOP and report to Udi. Do not resolve conflicts silently — the other session's work may be more recent and important.
 
 <!-- SPECKIT START -->
-Active feature: `003-tutorial-ch02` (Olamni Tutorial — Chapter 2: LP/GLP Append Contrast + Body Kernels).
+Active feature: `004-tutorial-ch03` (Olamni Tutorial — Chapter 3: GLP Core + §3.2 Guard Curriculum).
 
-For technologies, dependencies, project structure, shell commands, and other implementation context for the active feature, read the current plan: [`specs/003-tutorial-ch02/plan.md`](specs/003-tutorial-ch02/plan.md).
+For technologies, dependencies, project structure, shell commands, and other implementation context for the active feature, read the current plan: [`specs/004-tutorial-ch03/plan.md`](specs/004-tutorial-ch03/plan.md).
 
-Companion artefacts under `specs/003-tutorial-ch02/`:
-- `spec.md` — feature specification (with 5 resolved Clarifications: ex-02 strict trace contract; duplicate `append/3` inline; locked primary goals + bindings for ex-02 / ex-03; cross-chapter import scope; test harness exclusion)
-- `research.md` — Phase 0 decisions (R-001 comment density across 4 .glp files, R-002 REPL build location inherited from ch01, R-003 top-level tutorial.md update strategy, R-004 inspection goals for all three exercises, R-005 Dart verification, R-006 PDF re-read scope, R-007 cross-chapter import provenance, R-008 sum/2 + append_and_sum/4 decomposition, R-009 timed_append/3 body shape)
-- `data-model.md` — entities (Exercise ch02 variant with 2 .glp for ex-01 / 1 each for ex-02-03, Chapter Tutorial, Top-level Index, Approval Gate, Body Kernel, Cross-chapter Import) with state transitions and progressive body-kernel curriculum
-- `contracts/trace-file-format.md` — `ex-NN-repl-trace.md` structural contract (six phases for ex-01, five each for ex-02 / ex-03; FR-014 elapsed-ms relaxation for ex-03 only)
-- `contracts/status-block-format.md` — `ch02_tutorial.md` approval-gate format contract
-- `contracts/glp-file-format.md` — content contract for all 4 .glp files (LP-only intentionally rejected, GLP append cross-chapter import, append_and_sum, timed_append)
-- `quickstart.md` — implementer's quickstart (three-phase implementation order with halt-and-report rules; the LEARNER-facing quickstart lives in each `olamni/tutorial/ch02/exercise-NN/ex-NN-tutorial.md` post-implement)
-- `checklists/requirements.md` — quality checklist from `/speckit-clarify` (16/16 pass, post-clarify iteration 2)
+Companion artefacts under `specs/004-tutorial-ch03/`:
+- `spec.md` — feature specification (with 3 resolved Clarifications, all locking variation shapes early to eliminate downstream churn: Q1 ch4 exemplar = §4.2.1 + §4.2.2 producer/consumer with primary `producer(A, 5), producer(B, 3), merge(A?, B?, M), consumer(M?, 0, Sum).` → `Sum = 21`; Q2 §3.2 defined-guard idiom = `channel/1` + `process/2` byte-exact p 22 with primary `process(ch(a, b), Status).` → `Status = ok`; Q3 §3.2 negation idiom = `lookup/3` complete with both clauses byte-exact p 22 with primary `lookup(b, [(a,1),(b,2),(c,3)], V).` → `V = 2`. Includes FR-015 amendment permitting `:=` body kernel INHERITED from byte-exact ch4 import while forbidding it in ch3-introduced procedures)
+- `research.md` — Phase 0 decisions (R-001 comment density across 4 .glp files, R-002 REPL build location inherited from ch01/ch02, R-003 top-level tutorial.md update strategy, R-004 inspection goals for all three exercises, R-005 Dart verification, R-006 PDF re-read scope p 15 + p 31 + p 22 + p 24, R-007 cross-chapter import provenance for producer/consumer pair, R-008 handle/1 local-stub resolution for ex-02, R-009 stand-alone composition for both ex-02 and ex-03)
+- `data-model.md` — entities (Exercise ch03 variant with 2 .glp for ex-01 / 1 each for ex-02-03, Chapter Tutorial, Top-level Index, Approval Gate ch03 instance with 2 active + 3 closed gates, §3.2 Guard Species replacing ch02's Body Kernel entity, Cross-chapter Import) with state transitions and §3.2 guard curriculum (built-in → defined → negation)
+- `contracts/trace-file-format.md` — `ex-NN-repl-trace.md` structural contract (six phases for ex-01 covering two-file load + composed primary; five each for ex-02 / ex-03; STRICT byte-equality for all three traces — no relaxation since ch3 has no wallclock-derived output)
+- `contracts/status-block-format.md` — `ch03_tutorial.md` approval-gate format contract
+- `contracts/glp-file-format.md` — content contract for all 4 .glp files (Program 3.1 byte-exact p 15, producer/consumer byte-exact p 31 with R-007 provenance + inherited `:=`, channel/1+process/2 byte-exact p 22 + local handle/1 stub, lookup/3 byte-exact p 22 with both clauses)
+- `quickstart.md` — implementer's quickstart (three-phase implementation order with halt-and-report rules; the LEARNER-facing quickstart lives in each `olamni/tutorial/ch03/exercise-NN/ex-NN-tutorial.md` post-implement)
+- `checklists/requirements.md` — quality checklist from `/speckit-specify` (16/16 pass)
 - `tasks.md` — Phase 2 task list (generated by `/speckit-tasks`)
 
-Predecessor (ch01) artefacts at `specs/002-tutorial-ch01/` are inherited as the model. Branch number → dir number mapping per workflow memory: ch01→002, ch02→003, ch03→004, …, ch13→014.
+Predecessor (ch01 + ch02) artefacts at `specs/002-tutorial-ch01/` and `specs/003-tutorial-ch02/` are inherited as the model. Branch number → dir number mapping per workflow memory: ch01→002, ch02→003, ch03→004, …, ch13→014.
 
 Constitution governing this feature: [`.specify/memory/constitution.md`](.specify/memory/constitution.md) v1.2.0.
 
-Workflow memory for replicating this on ch03–ch13: [`memory/olamni_tutorial_chapter_workflow.md`](memory/olamni_tutorial_chapter_workflow.md) (in the Claude memory dir).
+Workflow memory for replicating this on ch04–ch13: [`memory/olamni_tutorial_chapter_workflow.md`](memory/olamni_tutorial_chapter_workflow.md) (in the Claude memory dir).
 <!-- SPECKIT END -->
