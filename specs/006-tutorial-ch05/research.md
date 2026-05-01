@@ -1,9 +1,33 @@
 # Phase 0 Research — Olamni Tutorial Chapter 5
 
 **Plan**: [plan.md](./plan.md) | **Spec**: [spec.md](./spec.md)
-**Date**: 2026-04-30
+**Date**: 2026-04-30 (initial); **2026-05-01 staleness header added during /speckit-analyze remediation**
 
-This document resolves the plan-level items deferred during `/speckit-clarify`. Three Clarifications were already resolved in `spec.md` (Q1: 8-exercise grouping locked = Option A; Q2: helper-stub shapes deferred to /speckit-plan T006-equivalent with permitted-shape sketch; Q3: status-block format = per-exercise 8 lines). The remaining decisions live here.
+> **⚠ STALENESS NOTICE (2026-05-01, post-Q7+Q12 binding)**
+>
+> This research.md was authored against pre-Q7 spec state (8 exercises, helper-bearing exercises ex-01/ex-02/ex-03 per Q2 deferral, Foundations group = ex-01+ex-02+ex-03). The spec has since been amended through 9 additional Clarifications (Q4–Q12), most notably **Q7 (2026-04-30)** which retracted the Q2/R-012 helper authorization on grounds of literal-source-mandate violation and renumbered the locked exercise list from 8 to 7, and **Q12 (2026-05-01)** which propagated the post-Q7 numbering across the spec.
+>
+> **Binding authority for /speckit-implement: spec.md (Q12-unified) + tasks.md (post-Q7+Q12 regenerated 2026-05-01) + plan.md (post-Q12 written 2026-05-01) + contracts/* (post-Q7+Q12 rewritten 2026-05-01).**
+>
+> Items in this research.md that are **STALE post-Q7+Q12**:
+> - **R-001** — references 8 `.glp` files + helper-bearing ex-01/ex-02/ex-03 + ~35–45 `%%` comments. Post-Q7 reality: 7 exercises (9 `.glp` files including 2 corrected-form negatives), NO helpers, ~20–30 `%%` comments + Q8 stub markers in ex-04 + Q10 amendment header in ex-05.
+> - **R-004** — references "ex-01 through ex-06" positive exercises (8-exercise pre-Q7 numbering) + helper-bearing exercises. Post-Q7: load-only ex-01+ex-02 have NO inspection goals; full-program ex-03+ex-04+ex-05 have 4-goal sessions; negative ex-06+ex-07 have 2–3 phases.
+> - **R-008** — example cross-reference text references "ex-04" (pre-Q7 = §5.4 worked merge); post-Q7 this is **ex-03** (§5.3+§5.4 merged). Substantive content (canonical block citing ch04 ex-04 untyped predecessor) remains correct; only the post-Q7 ch05-ex-NN labels are stale.
+> - **R-009** — locks 8 baseline filenames + 2 extra for negatives. Post-Q7: 7 baseline + 2 extra = 9 total. Filename for ex-03 is `ch-05-ex-03-mode-checked-merge.glp` (was pre-Q7 ex-04). Filename for ex-04 is `ch-05-ex-04-counter-response-slot.glp` (was pre-Q7 ex-05). Filename for ex-05 is `ch-05-ex-05-typed-quicksort.glp` (was pre-Q7 ex-06). Filename for ex-06 is `ch-05-ex-06-type-error-{failing,corrected}.glp` (was pre-Q7 ex-07). Filename for ex-07 is `ch-05-ex-07-mode-error-{failing,corrected}.glp` (was pre-Q7 ex-08).
+> - **R-010** — within-group order Foundations ex-01→ex-02→ex-03 (3 exercises) + 4 group-boundary flips. Post-Q7: Foundations ex-01→ex-02 (2 exercises) + 3 group-boundary flips at Foundations→Mode-checking-flow / Mode-checking-flow→Flagship / Flagship→Negatives.
+> - **R-012** — entire helper-design appendix is **RETRACTED per Q7**. Type-only exercises (ex-01, ex-02 post-Q7) are 1-phase load-only with NO fabricated helpers. Q8 minimal coverage stubs in ex-04 are NOT helpers in the retracted-Q2 sense — see contracts/glp-file-format.md.
+>
+> Items that remain CURRENT and BINDING:
+> - **R-002** — REPL build-artifact location (still applicable).
+> - **R-003** — Top-level tutorial.md update strategy (still applicable, but `8 are approved` → `7 are approved`).
+> - **R-005** — Dart SDK verification (still applicable).
+> - **R-006** — Type-checker operational verification (still applicable; Appendix A captured 2026-04-30 against build `2362202d`; Q11 captured 2026-05-01 against build `bcd59392`; both confirm operational).
+> - **R-007** — PDF re-read scope (still applicable).
+> - **R-011** — Negative-exercise trace structure + R-011 procedure (procedure remains applicable; per Q11 empirical T3+T6, R-011 relaxation NOT triggered for current REPL build — full byte-equality holds for both negative-exercise error messages).
+>
+> **Implementer guidance**: When acting on this research.md, FIRST consult spec.md (Q12-unified) + tasks.md + contracts/*. Where this research.md conflicts with spec.md, spec.md wins per FR-013 + Constitution Principle I.
+
+This document resolves the plan-level items deferred during `/speckit-clarify`. Three Clarifications were already resolved in `spec.md` (Q1: 8-exercise → 7-exercise post-Q7 grouping locked = Option A; Q2: helper-stub shapes deferred to /speckit-plan T006-equivalent with permitted-shape sketch — **RETRACTED per Q7**; Q3: status-block format = per-exercise **7 lines post-Q7**, was 8 pre-Q7). The remaining decisions live here (subject to staleness annotations in the notice block above).
 
 ---
 
