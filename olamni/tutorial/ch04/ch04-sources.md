@@ -35,7 +35,7 @@
 | 4.2.9 | `distribute_indexed/3` | p 33–34 | 3 clauses w/ `send(N,X)` tags | indexed distributor |
 | 4.2.10 | `observer/3` | p 34 | 2 clauses, `ground` guard | non-consuming observer |
 | 4.2.11 | `adder/4` ripple-carry | p 34 | 2 clauses chaining `full_adder/5` | n-bit adder over streams |
-| 4.2.12 | `bb/0`, `consumer/2`, `producer/2` sliding-window buffer | p 34 | top-level + 1 consumer + 1 producer | buffered communication |
+| 4.2.12 | `bb/0`, `consumer/1`, `producer/2` sliding-window buffer | p 34 | top-level + 1 consumer + 1 producer | buffered communication |
 | 4.2.13 | `bb_test/0` terminating buffer variant | p 34–35 | top-level + 2 consumer + 1 producer | bounded buffer |
 | 4.2.14 | `counter/1`, `counter_loop/2` | p 35 | 1 entry + 4 loop clauses (clear/add/read/done) | object/monitor pattern |
 | 4.2.15 | `accumulator/1`, `acc_loop/2`, `test_acc/0`, `client1/1`, `client2/1` | p 36 | object + 2 clients via `merge` | monitor with multiple clients |
