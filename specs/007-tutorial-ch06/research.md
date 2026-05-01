@@ -119,5 +119,42 @@ Run BEFORE T001 of /speckit-implement:
 - [ ] `dart --version` — reports `^3.9.4` or later (currently 3.10.1).
 - [ ] REPL build: `dart compile exe glp_runtime/bin/glp_repl.dart --define=GLP_BUILD_COMMIT="$(git log -1 --format='%h %s')" -o glp_runtime/glp_repl.exe` — succeeds with no warnings.
 - [ ] REPL banner verified: `Built from: <commit>` matches `Repo HEAD: <commit>` (no STALE BINARY warning).
-- [ ] R-006 type-checker pre-flight (positive + negative cases) — both pass per the documented procedure above.
+- [x] R-006 type-checker pre-flight (positive + negative cases) — both pass per the documented procedure above. **Verified 2026-05-01 against build `293b245d` (current HEAD); see Appendix A.1 below for captured outputs.**
 - [ ] Baseline test run: `DART="/c/Users/gavri/dart-sdk/bin/dart" bash test/run_all_tests.sh` — passes at the ch05 ship state baseline (494/494 expected; record any drift).
+
+### A.1 — Captured outputs from R-006 pre-flight (2026-05-01, build `293b245d`)
+
+**Positive case** — `olamni/tutorial/ch05/exercise-05/ch-05-ex-05-typed-quicksort.glp`:
+
+```
+GLP> ✓ Loaded: D:/bstdev/research/glp/glp/olamni/tutorial/ch05/exercise-05/ch-05-ex-05-typed-quicksort.glp
+```
+
+**Negative case** — `olamni/tutorial/ch05/exercise-06/ch-05-ex-06-type-error-failing.glp`:
+
+```
+GLP> Error loading D:/bstdev/research/glp/glp/olamni/tutorial/ch05/exercise-06/ch-05-ex-06-type-error-failing.glp: Exception: Type checking failed:
+  Head of foo is not well-typed:
+  Inconsistent path: Number type requires numeric literal
+  Path: ([|]/2, 0, output) → (a, 1, output)
+  Inconsistent path: Number type requires numeric literal
+  Path: ([|]/2, 0, output) → ([|]/2, 2, output) → (b, 1, output)
+  Inconsistent path: Number type requires numeric literal
+  Path: ([|]/2, 0, output) → ([|]/2, 2, output) → ([|]/2, 2, output) → (c, 1, output) at line 27
+```
+
+Both expected outcomes confirmed: positive loads cleanly; negative is rejected with the documented Number-type / inconsistent-path message. R-006 pre-flight PASSES; ch06 work is unblocked.
+
+### A.2 — ch06 PDF stub-state re-verification (2026-05-01, T006b)
+
+Per FR-015, book p 53 of `GLP_ART.pdf` re-read at /speckit-implement T006b:
+
+- Chapter title: "Typed Programming" — present.
+- Intro sentence: "This chapter presents advanced GLP programming techniques that build on the moded type system introduced in Chapter 5." — present **and** already documented in `olamni/tutorial/ch06/ch06-sources.md` lines 9–10 as part of the original stub state at /speckit-specify time. NOT new body text.
+- Section headings: §6.1 Difference Lists, §6.2 Quicksort, §6.3 Equators: Emergency Brake, §6.4 Bidirectional Communication, §6.5 Buffered Communication — all present, all heading-only.
+- Programs: none. No code blocks under any §6.x heading.
+- Page count: 1 (p 53).
+
+FR-015 halt condition is "if any body text **has been added**" (i.e., new since /speckit-specify). The intro sentence is part of the original stub captured by `ch06-sources.md`; no new body text exists. T006b PASSES; ch06 work continues.
+
+(Note: the prose in `ch06-sources.md` line 7 says "only the chapter title and section headings — no body text" but the quoted block lines 9–16 includes the intro sentence. The accurate characterisation is "chapter title + intro sentence + 5 heading-only sections + no Programs". This is a documentation polish opportunity for `ch06-sources.md`, not a halt condition.)

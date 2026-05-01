@@ -19,7 +19,7 @@ This produces a single binary (`.exe` on Windows; unsuffixed on Linux/macOS) at 
 | 3 | GLP Core | [`ch03/ch03_tutorial.md`](ch03/ch03_tutorial.md) | implemented 2026-04-30 |
 | 4 | Basic Concurrent Programming | [`ch04/ch04_tutorial.md`](ch04/ch04_tutorial.md) | pending review (2026-04-30) |
 | 5 | Types and Modes | [`ch05/ch05_tutorial.md`](ch05/ch05_tutorial.md) | implemented 2026-05-01 |
-| 6 | Typed Programming | [`ch06/ch06-sources.md`](ch06/ch06-sources.md) | planned (chapter is a stub in the PDF) |
+| 6 | Typed Programming | [`ch06/ch06_tutorial.md`](ch06/ch06_tutorial.md) | implemented 2026-05-01[^ch06-synth] |
 | 7 | Module System | [`ch07/ch07-sources.md`](ch07/ch07-sources.md) | planned |
 | 8 | The Grassroots Social Graph | [`ch08/ch08-sources.md`](ch08/ch08-sources.md) | planned |
 | 9 | Social Networks | [`ch09/ch09-sources.md`](ch09/ch09-sources.md) | planned |
@@ -49,3 +49,5 @@ The full design rationale lives in [`charter.md`](charter.md). The project Const
 - **pending review** — exercise files exist; awaiting project-owner approval.
 - **planned** — sources file present; exercise not yet implemented.
 - **stub in PDF** — the book chapter itself has only headings; tutorial cannot proceed until source content is available.
+
+[^ch06-synth]: ch06 content is synthesised from ch01–ch05 sources per /speckit-clarify Q1 — the ch06 PDF chapter (book p 53) is a stub containing only the chapter title, a one-line intro, and the five §6.x section headings (no body text, no native Programs). See `ch06/ch06_tutorial.md` for the per-exercise synthesis source map.
