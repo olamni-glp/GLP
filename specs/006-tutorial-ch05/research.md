@@ -344,6 +344,29 @@ GLP> Goodbye!
 
 ch05 work proceeds.
 
+### A.4 Re-verification at /speckit-implement T006a (captured 2026-05-01)
+
+REPL build: `941a4c9e plan(ch05): regenerate plan+tasks+contracts post-Q7+Q12 binding form` (banner Build line). Per tasks.md T006a, R-006 re-verified against the build in use at /speckit-implement runtime.
+
+**Positive case** (`C:/Users/gavri/AppData/Local/Temp/r006-positive.glp` containing `Bit ::= 0 ; 1.`):
+```
+GLP> ✓ Loaded: C:/Users/gavri/AppData/Local/Temp/r006-positive.glp
+GLP> Goodbye!
+```
+→ ✓ accepts.
+
+**Negative case** (`C:/Users/gavri/AppData/Local/Temp/r006-negative.glp` containing `procedure foo(Number).` + `foo(a).`):
+```
+GLP> Error loading C:/Users/gavri/AppData/Local/Temp/r006-negative.glp: Exception: Type checking failed:
+  Head of foo is not well-typed:
+  Inconsistent path: Number type requires numeric literal
+  Path: (a, 0, output) at line 2
+GLP> Goodbye!
+```
+→ ✓ rejects.
+
+R-006 PASSED on build `941a4c9e`. Type-checker operational; ch05 work proceeds.
+
 ---
 
 ## Summary of Phase 0
