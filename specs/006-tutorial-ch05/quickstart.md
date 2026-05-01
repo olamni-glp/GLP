@@ -1,9 +1,27 @@
 # Implementer Quickstart — Olamni Tutorial Chapter 5
 
 **Plan**: [plan.md](./plan.md) | **Spec**: [spec.md](./spec.md) | **Research**: [research.md](./research.md)
-**Date**: 2026-04-30
+**Date**: 2026-04-30 (initial); **2026-05-01 staleness header added during /speckit-analyze remediation**
 
-This is the implementer's quickstart for `/speckit-implement`. Chapter 5 is smaller in volume than ch04 (8 exercises vs 10; ~10 byte-exact Programs vs ~38; ~35–45 `%%` comments vs ~133) but introduces three NEW exercise kinds (type-only / procedure-decl-only / negative) plus the type-checker's first meaningful pipeline activation.
+> **⚠ STALENESS NOTICE (2026-05-01, post-Q7+Q12 binding)**
+>
+> This quickstart.md was authored against pre-Q7 spec state (8 exercises, helper-bearing Foundations group of 3 exercises, helper proposal step at /speckit-implement, "5-phase trace adjusted for type-only kind"). Post-Q7+Q12 binding: 7 exercises, **no fabricated helpers** (Q7 retracts Q2/R-012), Foundations = ex-01+ex-02 (2 exercises, both 1-phase load-only).
+>
+> **Binding authority: spec.md (Q12-unified) + tasks.md (post-Q7+Q12) + plan.md (post-Q12) + contracts/* (post-Q7+Q12).**
+>
+> **Stale narrative blocks**:
+> - **Pre-flight step 6 (R-006)** is CURRENT — type-checker verification still required at /speckit-implement T006a; current REPL build re-verification (Q11 captured against `bcd59392`).
+> - **"Implementation order (4 sub-section groups)"** — group composition under Q7+Q12: Foundations (ex-01 + ex-02 — load-only — NO helpers), Mode-checking-flow (ex-03 + ex-04), Flagship (ex-05), Negatives (ex-06 + ex-07). Within-group sequencing intact.
+> - **"Group 1: Foundations"** — step 2 "Propose ex-01 + ex-02 + ex-03 helper shapes" is RETRACTED per Q7. Steps 3–8 apply only to ex-01 + ex-02 (NO helper layer, 1-phase load-only trace, no inspection goals). The pre-Q7 ex-03 procedure-decl-only step is dissolved into the Mode-checking-flow group's ex-03 (§5.3+§5.4 merged per Q7).
+> - **"Group 2: Mode-checking-flow"** — exercise renumbering: pre-Q7 ex-04 (§5.4 worked merge) → post-Q7 ex-03; pre-Q7 ex-05 (§5.5 counter) → post-Q7 ex-04. Q8 minimal coverage stubs are required for ex-04 (post-Q7) — see contracts/glp-file-format.md File 4.
+> - **"Group 3: Flagship"** — exercise renumbering: pre-Q7 ex-06 (§5.6 typed quicksort) → post-Q7 ex-05. Q10 dual amendment (corrected qsort signature + interleaved layout) MUST be applied per Q11 T4 empirical confirmation. Locked primary goal candidate `quicksort([3,1,4,1,5,9,2,6], S).` ⇒ `S = [1,1,2,3,4,5,6,9]` still applies.
+> - **"Group 4: Negatives"** — exercise renumbering: pre-Q7 ex-07 (§5.7.1 type-error) → post-Q7 ex-06; pre-Q7 ex-08 (§5.7.2 mode-error) → post-Q7 ex-07. Per Q11 empirical T3+T6, both negative-exercise error messages have full byte-equality (no per-run-varying segments observed; R-011 relaxation NOT triggered for current REPL build).
+> - **"Definition of Done"** — "all 8 NN" → all 7 NN post-Q7. "All 6 positive traces" → all 5 positive+load-only traces (ex-01..ex-05). "All 2 negative traces" → ex-06 + ex-07 post-Q7. "Helper layers" requirement RETRACTED.
+> - **"On failure" table** — "Helper unit-clause violates SRSW or type-check (ex-01/ex-02/ex-03)" row RETRACTED per Q7.
+>
+> **Implementer guidance**: When this quickstart.md conflicts with spec.md, spec.md wins per FR-013. The narrative below remains useful for understanding the implementation flow, but the exercise numbering, helper authorization, and group composition MUST be cross-checked against spec.md Q12 + tasks.md before acting.
+
+This is the implementer's quickstart for `/speckit-implement`. Chapter 5 is smaller in volume than ch04 (7 exercises post-Q7 vs 10; ~10 byte-exact Programs vs ~38; ~20–30 `%%` comments post-Q7 vs ~133) but introduces three exercise kinds (load-only / full-program / negative) plus the type-checker's first meaningful pipeline activation. (Subject to staleness annotations in the notice block above.)
 
 ---
 

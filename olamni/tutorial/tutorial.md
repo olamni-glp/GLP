@@ -18,7 +18,7 @@ This produces a single binary (`.exe` on Windows; unsuffixed on Linux/macOS) at 
 | 2 | Logic Programs and Linear Logic | [`ch02/ch02_tutorial.md`](ch02/ch02_tutorial.md) | implemented 2026-04-29 |
 | 3 | GLP Core | [`ch03/ch03_tutorial.md`](ch03/ch03_tutorial.md) | implemented 2026-04-30 |
 | 4 | Basic Concurrent Programming | [`ch04/ch04_tutorial.md`](ch04/ch04_tutorial.md) | pending review (2026-04-30) |
-| 5 | Types and Modes | [`ch05/ch05-sources.md`](ch05/ch05-sources.md) | planned |
+| 5 | Types and Modes | [`ch05/ch05_tutorial.md`](ch05/ch05_tutorial.md) | implemented 2026-05-01 |
 | 6 | Typed Programming | [`ch06/ch06-sources.md`](ch06/ch06-sources.md) | planned (chapter is a stub in the PDF) |
 | 7 | Module System | [`ch07/ch07-sources.md`](ch07/ch07-sources.md) | planned |
 | 8 | The Grassroots Social Graph | [`ch08/ch08-sources.md`](ch08/ch08-sources.md) | planned |

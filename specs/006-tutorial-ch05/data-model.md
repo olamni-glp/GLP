@@ -1,9 +1,31 @@
 # Phase 1 Data Model — Olamni Tutorial Chapter 5
 
 **Plan**: [plan.md](./plan.md) | **Spec**: [spec.md](./spec.md) | **Research**: [research.md](./research.md)
-**Date**: 2026-04-30
+**Date**: 2026-04-30 (initial); **2026-05-01 staleness header added during /speckit-analyze remediation**
 
-This file enumerates the entities introduced (or extended) by this feature, their attributes, relationships, validation rules, and state transitions. It is documentation of pure-Markdown / pure-`.glp` artefacts; there is no database, no API surface, no in-memory runtime model. The "entities" here are file artefacts with structural contracts.
+> **⚠ STALENESS NOTICE (2026-05-01, post-Q7+Q12 binding)**
+>
+> This data-model.md was authored against pre-Q7 spec state (8 exercises, helper-bearing exercise kinds, ex-03 = procedure-decl-only). Post-Q7+Q12 binding form has 7 exercises and only 3 exercise kinds: load-only (ex-01, ex-02) / full-program (ex-03, ex-04, ex-05) / negative (ex-06, ex-07). The procedure-decl-only kind is RETRACTED (§5.3 merged into ex-03 alongside §5.4 worked merge). The helpers field on the Exercise entity is RETRACTED per Q7.
+>
+> **Binding authority: spec.md (Q12-unified) + tasks.md + plan.md + contracts/* (all 2026-05-01).**
+>
+> **Stale items requiring re-mapping**:
+> - **Exercise table** — 8 rows pre-Q7; post-Q7+Q12: 7 rows with renumbering (ex-04→ex-03 mode-checked-merge MERGED §5.3+§5.4; ex-05→ex-04 counter; ex-06→ex-05 quicksort with Q10 dual amendment; ex-07→ex-06 type-error; ex-08→ex-07 mode-error).
+> - **`exercise_kind` enum** — pre-Q7 enum included `procedure-decl-only`; post-Q7 RETRACTED (§5.3 merged into ex-03 of full-program kind).
+> - **`helpers` Exercise field** — RETRACTED per Q7 across all exercises. Q8 minimal coverage stubs in ex-04 are NOT helpers — see contracts/glp-file-format.md "Q8 minimal coverage stubs" section.
+> - **Sub-section group table** — Foundations pre-Q7 = ex-01+ex-02+ex-03 (3 exercises); post-Q7 = ex-01+ex-02 (2 exercises). Mode-checking-flow pre-Q7 = ex-04+ex-05 (2 exercises); post-Q7 = ex-03+ex-04 (2 exercises but renumbered).
+> - **Approval Gate table** — pre-Q7 grep contracts return 3/2/1; post-Q7+Q12 return 2/2/1 (Foundations dropped from 3 to 2). Negatives gate adds `(06|07): approved` returns 2 (post-Q7 numbering).
+> - **Type-only / Procedure-decl-only Exercise entity** — post-Q7 collapses to a single **Load-only Exercise** entity (ex-01, ex-02; no helpers; 1-phase trace). The procedure-decl-only sub-kind is dissolved.
+> - **Negative Exercise entity** — `applies_to` updates from "ex-07, ex-08" pre-Q7 to "ex-06, ex-07" post-Q7+Q12.
+>
+> **Items that remain CURRENT and BINDING**:
+> - **Cross-chapter Relationship entity** — substantive content correct (typed↔untyped merge ↔ ch04 ex-04; typed↔untyped counter ↔ ch04 ex-06). The `ch05_exercise` field updates: pre-Q7 ex-04 → post-Q7 ex-03 (merge); pre-Q7 ex-05 → post-Q7 ex-04 (counter).
+> - **Validation rules and state transitions** structures still apply (just with updated counts and renumbered exercise IDs).
+> - **Top-level Tutorial Index entity** unchanged.
+>
+> **Implementer guidance**: When this data-model.md conflicts with spec.md, spec.md wins per FR-013.
+
+This file enumerates the entities introduced (or extended) by this feature, their attributes, relationships, validation rules, and state transitions. It is documentation of pure-Markdown / pure-`.glp` artefacts; there is no database, no API surface, no in-memory runtime model. The "entities" here are file artefacts with structural contracts. (Subject to staleness annotations in the notice block above.)
 
 ---
 
