@@ -1828,6 +1828,68 @@ fi
 echo ""
 
 # =============================================================================
+# SECTION R: CH07 CLUSTER PROJECTS (TUTORIAL-MIRROR TESTS)
+# =============================================================================
+# Per spec FR-014 + Q-amendment Q-FR014a (Section letter R, NOT S):
+# R-1: Cluster A simple-multimodule project loads via REPL project-loading mode
+#      and runs each of plays 1-3 (per Q1+Q5+Q1a; cluster A's pruned boot.glp
+#      retains plays 1-3 + fplay 1-3).
+# R-2: Cluster B cssg-modules project files are byte-exact copies of canonical
+#      programs/cssg_modules/ (per FR-003 + Q-FR003a). After stripping the 6-line
+#      ch07 header from each tutorial-side file, diff against canonical MUST
+#      return zero differences. The 6-line header structure is the contract per
+#      specs/008-tutorial-ch07/contracts/glp-file-format.md.
+# Spec amendment to test-mirror-format.md: the original awk heuristic counted
+# ALL leading %% lines, which over-counted because canonical files also start
+# with %% comments. The fixed-line-count `tail -n +7` approach is the contract
+# in force; the header is exactly 6 lines for byte-exact files.
+echo "=== Section R: ch07 cluster projects ==="
+echo ""
+
+# R-1: Cluster A simple-multimodule load + plays 1-3
+echo "--- R-1: cluster A simple-multimodule load + plays ---"
+
+CLUSTER_A_DIR="$(to_repl_path "$GLP_DIR/olamni/tutorial/ch07/simple-multimodule")"
+
+output=$($DART run "$REPL" <<HEREDOC
+$CLUSTER_A_DIR
+:quit
+HEREDOC
+2>&1)
+check "cluster A loads via project mode" "Loaded project" "$output"
+
+for play in play1 play2 play3; do
+    output=$($DART run "$REPL" <<HEREDOC
+$CLUSTER_A_DIR
+:limit 1000000
+$play.
+:quit
+HEREDOC
+    2>&1)
+    check "cluster A $play succeeds or suspended" "succeeds\|suspended" "$output"
+done
+
+# R-2: Cluster B byte-equivalence diff (after stripping 6-line ch07 header)
+echo "--- R-2: cluster B byte-equivalence to canonical ---"
+
+CSSG_CANONICAL="$GLP_DIR/programs/cssg_modules"
+CLUSTER_B_DIR="$GLP_DIR/olamni/tutorial/ch07/cssg-modules"
+
+for f in self.glp agent.glp ui/mediator.glp ui/actors.glp boot.glp mad_boot.glp; do
+    CANONICAL="$CSSG_CANONICAL/$f"
+    TUTORIAL="$CLUSTER_B_DIR/$f"
+    # Strip the 6-line ch07 header per glp-file-format.md contract.
+    if diff <(tail -n +7 "$TUTORIAL") "$CANONICAL" > /dev/null 2>&1; then
+        check "byte-equivalent: $f" "ok" "ok"
+    else
+        DIFF_OUT=$(diff <(tail -n +7 "$TUTORIAL") "$CANONICAL" | head -5)
+        check "byte-equivalent: $f" "ok" "DRIFT in $f: $DIFF_OUT"
+    fi
+done
+
+echo ""
+
+# =============================================================================
 # SUMMARY
 # =============================================================================
 TOTAL=$((PASS + FAIL))
