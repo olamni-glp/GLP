@@ -95,8 +95,8 @@ See ex-06 (cluster A Flutter setup walkthrough) for the recommended clean-sessio
 - exercise-03: approved 2026-05-02
 - exercise-04: approved 2026-05-02
 - exercise-05: approved 2026-05-02
-- exercise-06: pending review
-- cluster-A: not yet satisfied
+- exercise-06: approved 2026-05-03
+- cluster-A: approved 2026-05-03
 - exercise-07: approved 2026-05-02
 - exercise-08: approved 2026-05-02
 - exercise-09: approved 2026-05-02
@@ -108,9 +108,11 @@ See ex-06 (cluster A Flutter setup walkthrough) for the recommended clean-sessio
 
 The ten REPL exercises (ex-01..ex-05 cluster A + ex-07..ex-11 cluster B) were implemented on 2026-05-02 and are auto-approved (consistent with workflow memory's auto-mode). Each has a verbatim REPL trace + tutorial step-through under `exercise-NN/`.
 
-**ex-06 + ex-12 are `pending review`** because spec FR-017 mandates that Flutter exercises capture traces from a **manually-tested** Flutter run; synthesised traces are forbidden. Both Flutter pairing files (`glp_multiagent/lib/main_olamni_ch07_*.dart`) were created and **build-verified** on Windows (cluster A 60.9s + cluster B 31.8s; both produce a runnable `glp_multiagent.exe`). The actual launch + per-play observation + trace capture is deferred to the project owner. Each exercise has a tutorial-framework `ex-NN-tutorial.md` documenting the build/launch/clean-session sequence + a placeholder `ex-NN-flutter-trace.md` listing the 8-10-step manual test procedure.
+**ex-06 was approved on 2026-05-03** after manual Flutter test capture (build + launch + per-play tagged-output verification per FR-017 + flutter-trace-format). The cluster A Flutter pairing's `_cssgSpawnConfigs` uses a single-isolate spawn for `fplay$N/0` because cluster A's plays 1-3 are 3-agent friend-mediated within ONE GLP goal; the byte-equivalent tagged-output stream is captured in `exercise-06/ex-06-flutter-trace.md`.
 
-The **cluster-A boundary gate** (`cluster-A: approved YYYY-MM-DD`) is therefore **`not yet satisfied`** because ex-06 (the chapter's single Flutter setup walkthrough) is still pending manual test. Cluster B's REPL exercises (ex-07..ex-11) were implemented in parallel (auto-mode permits parallel drafting), and their content is independent of the cluster-A boundary status — but per spec FR-008 the formal gate-flip awaits the project owner's manual Flutter test of ex-06 followed by the boundary status flip.
+**ex-12 is still `pending review`** awaiting the cluster B Flutter manual test (Q4a-locked subset: plays 1+2+3+4+5). The cluster B Flutter pairing was build-verified at T032 (31.8s on Windows); the actual launch + per-play observation + trace capture is deferred. Plays 4-5 use 4-isolate parent_init/child_init spawn per the canonical CSSG pattern.
+
+The **cluster-A boundary gate** flipped to `approved 2026-05-03` after ex-06's manual Flutter test landed. All 6 cluster A exercises (ex-01..ex-06) are approved; the auxiliary check `grep -cE "^- exercise-0[1-6]: approved" ch07_tutorial.md` returns 6.
 
 **Section R** test mirror: 10/10 PASS in the post-implementation baseline (494/495 total — the 1 unrelated FAIL is a pre-existing case-sensitivity regex issue in `test/run_aot_smoke.sh` line 87 unrelated to ch07).
 
