@@ -1,3 +1,7 @@
+> **SUPERSEDED 2026-05-04** — This file is from the prior ch07 implementation (`26e01792` / `f094f9db`) that was rejected by the project owner. Preserved per the no-removal directive but **not part of this chapter's runnable content**. The current ch07 (one-play-per-exercise REPL walkthroughs) is at the [chapter signpost](../ch07_tutorial.md). Content below is the prior implementation, kept as record.
+
+---
+
 # ex-08 — REPL trace (cluster B cold-call befriending — plays 1–3)
 
 This trace captures the verbatim REPL output for ex-08 — the cluster B

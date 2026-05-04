@@ -1,3 +1,7 @@
+> **SUPERSEDED 2026-05-04** — This file is from the prior ch07 implementation (`26e01792` / `f094f9db`) that was rejected by the project owner. Preserved per the no-removal directive but **not part of this chapter's runnable content**. The current ch07 (one-play-per-exercise REPL walkthroughs) is at the [chapter signpost](../ch07_tutorial.md). Content below is the prior implementation, kept as record.
+
+---
+
 # ex-11 — REPL trace (cluster B §7.4 + Formal 7.2 cross-module-call inspection)
 
 This trace captures two REPL sessions exercising the §7.4 cross-module
