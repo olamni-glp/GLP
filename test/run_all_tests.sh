@@ -1830,6 +1830,21 @@ echo ""
 # =============================================================================
 # SECTION R: CH07 CLUSTER PROJECTS (TUTORIAL-MIRROR TESTS)
 # =============================================================================
+#
+# **SUPERSEDED 2026-05-04** — This section was added by the prior ch07
+# implementation (commit 26e01792, 2026-05-02) and tests the now-stale
+# olamni/tutorial/ch07/{simple-multimodule,cssg-modules}/ subdirectory copies
+# of programs/cssg_modules/. The current ch07 (v2026.05.04) uses the canonical
+# project directly — no derivative copies. Section R's tests still pass (the
+# subdirs are preserved on disk per the no-removal directive) but their value
+# is purely historical: they test that the prior copies haven't drifted from
+# canonical, which doesn't constrain the current chapter's correctness.
+# Disposition pending: either delete these tests or repurpose them as direct
+# canonical-load smoke tests. See olamni/tutorial/ch07/ch07_tutorial.md for
+# the current chapter shape.
+#
+# Original prior-implementation comment block follows:
+#
 # Per spec FR-014 + Q-amendment Q-FR014a (Section letter R, NOT S):
 # R-1: Cluster A simple-multimodule project loads via REPL project-loading mode
 #      and runs each of plays 1-3 (per Q1+Q5+Q1a; cluster A's pruned boot.glp

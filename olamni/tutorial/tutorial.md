@@ -20,7 +20,7 @@ This produces a single binary (`.exe` on Windows; unsuffixed on Linux/macOS) at 
 | 4 | Basic Concurrent Programming | [`ch04/ch04_tutorial.md`](ch04/ch04_tutorial.md) | pending review (2026-04-30) |
 | 5 | Types and Modes | [`ch05/ch05_tutorial.md`](ch05/ch05_tutorial.md) | implemented 2026-05-01 |
 | 6 | Typed Programming | [`ch06/ch06_tutorial.md`](ch06/ch06_tutorial.md) | implemented 2026-05-01[^ch06-synth] |
-| 7 | Module System | [`ch07/ch07_tutorial.md`](ch07/ch07_tutorial.md) | pending review (2026-05-02)[^ch07-derivation] |
+| 7 | Module System | [`ch07/ch07_tutorial.md`](ch07/ch07_tutorial.md) | implemented 2026-05-04[^ch07-remediation] |
 | 8 | The Grassroots Social Graph | [`ch08/ch08-sources.md`](ch08/ch08-sources.md) | planned |
 | 9 | Social Networks | [`ch09/ch09-sources.md`](ch09/ch09-sources.md) | planned |
 | 10 | Interlaced Streams | [`ch10/ch10-sources.md`](ch10/ch10-sources.md) | planned |
@@ -52,6 +52,6 @@ The full design rationale lives in [`charter.md`](charter.md). The project Const
 
 [^ch06-synth]: ch06 content is synthesised from ch01–ch05 sources per /speckit-clarify Q1 — the ch06 PDF chapter (book p 53) is a stub containing only the chapter title, a one-line intro, and the five §6.x section headings (no body text, no native Programs). See `ch06/ch06_tutorial.md` for the per-exercise synthesis source map.
 
-[^ch07-derivation]: ch07 is the transition chapter to use-case-driven multimodule projects per charter §2.2; cluster B's `cssg-modules/` is byte-exact-equivalent to `programs/cssg_modules/` enforced by Section R of `test/run_all_tests.sh`. Cluster A's `simple-multimodule/` is the same canonical pruned to 3-agent friend-mediated plays for a smaller §7.1–§7.6 mechanics demonstration; cluster B is the byte-exact §7.7 validation example.
+[^ch07-remediation]: ch07 was implemented 2026-05-04 as seven exercises, one per fplay (`fplay1..fplay7`), against the canonical `programs/cssg_modules/` project. Each exercise is a multi-goal interactive REPL walkthrough that recreates each component of the play's body individually, observes the bindings, then runs the full play. The prior implementation at `26e01792` (2026-05-02) and `f094f9db` (2026-05-03) used a confabulated cluster A/B split with synthesised content; it was rejected by the project owner and replaced. The prior commits are preserved in git history; the cluster A/B subdirectory copies + Flutter pairings + Section R test mirror are preserved on disk per the no-removal directive but are not part of the chapter's runnable content.
 
-[^ch07-transition]: ch07 is the concrete transition example. Cluster A (`olamni/tutorial/ch07/simple-multimodule/`) demonstrates §7.1–§7.6 module-system mechanics on a 3-agent footprint; cluster B (`olamni/tutorial/ch07/cssg-modules/`) is the byte-exact §7.7 CSSG validation example. Both clusters pair with Flutter mains under `glp_multiagent/lib/main_olamni_ch07_*.dart` per charter §2.2.
+[^ch07-transition]: ch07 is the concrete transition example from single-file exercises (chapters 1–6) to multimodule projects (chapter 7 onward). The runnable substrate is the §7.7 CSSG validation example at `programs/cssg_modules/` — four modules (`agent.glp`, `ui/mediator.glp`, `ui/actors.glp`, `boot.glp` + `self.glp`) implementing seven plays. From ch07 onward each chapter's exercises step through one play at a time as multi-goal interactive REPL walkthroughs.
