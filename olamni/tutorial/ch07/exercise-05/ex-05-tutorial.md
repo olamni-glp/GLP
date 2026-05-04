@@ -1,160 +1,98 @@
-# Exercise 05 — Cluster A end-to-end play1 (cross-references ex-01..ex-04)
+# Exercise 05 — fplay5: CSSG Bob rejects the child introduction (parental veto)
 
-Welcome to chapter 7, exercise 5 — the cap-stone of cluster A.  Where
-ex-01..ex-04 inspected each §7.x mechanic in isolation (project loading,
-declaration kinds, ancestor-scoped types, procedure renaming), this
-exercise puts them all in motion at once by running the smallest
-end-to-end demo cluster A offers: `play1` from `simple-multimodule/boot.glp`.
+`fplay5` is the second CSSG play. Same parent-mediated child introduction protocol as fplay4, but Bob now exercises the parental veto: when his agent surfaces `child_befriend(alice, carol, ReqId)` to his UI, bob5 issues `reject_child_intro(carol, ReqId)` instead of `approve_child_intro`. The child introduction is blocked at the parental approval step. The result is an 11-line tagged stream — seven lines shorter than fplay4 — terminating with Carol receiving a `rejected(dave)` notification.
 
-## What you'll learn
-
-Every §7.x mechanic introduced in ex-01..ex-04 is exercised when `play1`
-runs.  The single goal `play1.` brings the multimodule project to life:
-five `.glp` files are loaded as a unit; three agents, three mediators,
-and three actors are spawned; cross-module procedure calls resolve via
-the §7.5 `module#name` form; and the §7.4 ancestor-scoped types ensure
-every channel typechecks consistently across module boundaries.  The
-end-to-end run is the §7.7 multimodule play form (book p 61) —
-the validation example of the chapter.
-
-## play1 walkthrough
-
-`play1`'s body in cluster A's `boot.glp` (lines 115–145) is a sequence of
-twenty-one goals broken into one network allocation + three identical
-agent-mediator-actor blocks.  Each line cross-references back to one or
-more of ex-01..ex-04:
-
-1. **Network allocation** —
-   `network3(ch(AliceNetOut?, AliceNetIn), ch(BobNetOut?, BobNetIn), ch(CharlieNetOut?, CharlieNetIn))`
-   allocates three network channels.  `network3/3` is a PRIVATE procedure
-   in `boot.glp` (no `exported` keyword on its declaration; six recursive
-   clauses + one base case).  Cross-reference: **ex-02 §7.3** —
-   private procedures are visible only inside the module where they are
-   defined.  `play1` is in `boot.glp`, so it can call `network3/3`
-   directly.
-2. **Alice's actor** —
-   `actors # alice1(ch(AliceActorIn?, AliceActorOut))`.
-   The `actors # alice1` form is §7.5 procedure renaming: it refers to
-   the `alice1/1` procedure exported from sibling module `actors`.
-   Cross-reference: **ex-04 §7.5** + **ex-02 §7.3** (the `imported
-   procedure actors#alice1(ActorChannel?).` declaration on line 33 of
-   `boot.glp` is the §7.3 import side of the §7.5 cross-module call).
-3. **Alice's display tee** —
-   `tee(AliceActorOut?, AliceMedIn, AliceDispCmd)`.
-   `tee/3` is a PRIVATE procedure in `boot.glp` — it splits the actor's
-   command stream into two copies, one going to the mediator and one
-   captured for display.  Cross-reference: **ex-02 §7.3** (private,
-   intra-module).
-4. **Alice's agent** —
-   `agent # agent(alice, AliceAgentIn?, AliceNetIn?, [output('_user', AliceAgentToUser), output('_net', AliceNetOut)])`.
-   `agent # agent` is the §7.5 cross-module call to `agent/4` exported
-   from the `agent` sibling module.  The `OutputsList` argument
-   (`[output('_user', ...), output('_net', ...)]`) is typed by
-   `OutputsList`/`OutputEntry`/`OutputKey` declared in `self.glp` —
-   these types are visible to `boot.glp` because both modules share the
-   `cssg` ancestor.  Cross-reference: **ex-04 §7.5** + **ex-03 §7.4**.
-5. **Alice's mediator** —
-   `mediator # ui_mediator(alice, ch(AliceAgentToUser?, AliceAgentIn), ch(AliceMedIn?, AliceMedOut), [], 1)`.
-   `mediator # ui_mediator` is the §7.5 cross-module call to
-   `ui_mediator/5` exported from `ui/mediator.glp`.  Note this resolves
-   to a NESTED-directory module (`ui/`) — the project-loading mode
-   (§7.1–§7.2, ex-01) walked the directory tree and registered
-   `ui/mediator.glp` as module `mediator` (per the `-module(mediator).`
-   directive inside that file).  Cross-reference: **ex-01 §7.1–§7.2** +
-   **ex-04 §7.5**.
-6. **Alice's mediator-display tee** —
-   `tee(AliceMedOut?, AliceActorIn, AliceDispNotify)` — same shape as
-   step 3 but for the mediator's notifications.
-7. **Alice's display sinks** —
-   `sink(AliceDispCmd?), sink(AliceDispNotify?)` absorb the display
-   streams so they don't block the mediators.  `sink/1` is private to
-   `boot.glp`.  Cross-reference: **ex-02 §7.3**.
-8. **Bob's block (lines 129–136)** — repeats steps 2–7 with `bob1` /
-   `bob` substituted for `alice1` / `alice`.  Same §7.3 + §7.4 + §7.5
-   mechanics.
-9. **Charlie's block (lines 138–145)** — repeats steps 2–7 with
-   `charlie1` / `charlie` substituted.  Final clause body goal is
-   `sink(CharlieDispNotify?)` — closes off `play1`'s body.
-
-Throughout, the SRSW discipline (CLAUDE.md §16) holds: each variable
-appears at most once as a reader and at most once as a writer per
-clause.  This is why the network channels are allocated inverted
-(`ch(AliceNetOut?, AliceNetIn)` — reader of out-stream, writer of
-in-stream): the agent and the network see opposite views of the same
-shared streams.
-
-## Run the play
+## Open the REPL and load CSSG
 
 ```bash
-cd D:/bstdev/research/GLP/GLP && printf "%s\n:limit 1000000\nplay1.\n:quit\n" "$(pwd -W)/olamni/tutorial/ch07/simple-multimodule" | "/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill 2>&1 | head -50
+cd D:/bstdev/research/GLP/GLP
+"/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill
 ```
 
-Cross-check: `ex-05-repl-trace.md` records the verbatim REPL session.
+```
+GLP> D:/bstdev/research/GLP/GLP/programs/cssg_modules
+✓ Loaded project: D:/bstdev/research/GLP/GLP/programs/cssg_modules
+```
 
-## Outcome
+## Step 1 — `alice5/1`: same as alice4
 
-`play1.` returns `→ suspended`.  Per CLAUDE.md §12, both `→ succeeds`
-and `→ suspended` are valid play outcomes:
+`alice5` is structurally identical to alice4 — issues `connect(bob)` then `child_introduce(carol, bob, dave)` after seeing `connected(bob)`. No divergence:
 
-- **`→ succeeds`** — the goal completes.  All channels are sealed
-  (closed with `[]`), all spawned procedures have terminated, and there
-  is no remaining work in the scheduler.
-- **`→ suspended`** — the goal does not fail, and no fault is raised,
-  but channels remain open by design.  This is normal for plays whose
-  channels stay open after the actors finish their scripted exchanges
-  — there is simply no further input arriving, and the agents +
-  mediators are waiting for it.  The play's protocol logic completed
-  successfully; the network simply stayed alive.
+```
+GLP> alice5(ch([connected(bob)], A5Out)).
+A5Out = [connect(bob), child_introduce(carol, bob, dave)]
+→ succeeds
+```
 
-For `play1`, suspended is the expected outcome: Alice introduces Bob
-and Charlie via the cold-call protocol, both Bob and Charlie accept,
-the friendship channels are established, but no `text` messages or
-disconnect signals are sent on those channels — so they remain open.
-The §7.3 cold-call befriending protocol (book §7.3) is exercised
-end-to-end in this play; suspended after a successful protocol run
-is the same outcome shape that ch04 / ch05 / ch06 saw with their open
-channels.
+## Step 2 — `bob5/1`: the rejection — Bob vetoes the child introduction
 
-## §7.6 dynamic linking — referenced
+`bob5` (ui/actors.glp:344–358) accepts Alice's befriend (same as bob4), then in `bob5_wait_child_intro` produces `reject_child_intro(carol, ReqId)` instead of approve. Drive bob5 through the notify sequence:
 
-§7.6 (book p 60) describes load-time verification + type-automata-as-
-runtime-artifacts: when the project loader walks `simple-multimodule/`,
-it does not just compile each `.glp` file in isolation — it also
-verifies that every `imported procedure` declaration in `boot.glp`
-matches an `exported procedure` declaration in the corresponding
-sibling module, and that the type-automaton derived from each
-module's types is consistent with the assembled ancestor-scoped types
-in `self.glp`.  This is dynamic linking: the symbol table is built
-incrementally as modules load, and cross-module references are
-resolved before any goal can be run.
+```
+GLP> bob5(ch([befriend(alice, req(1)), child_befriend(alice, carol, req(2))], B5Out)).
+B5Out = [decision(yes, alice, req(1)), reject_child_intro(carol, req(2))]
+→ succeeds
+```
 
-This exercise demonstrates the OUTCOME of dynamic linking — the
-project loads (one `✓ Loaded project:` line), the play runs (no
-unresolved-reference errors, no type mismatches across module
-boundaries) — without diving into the linker internals.  The book's
-§7.6 is descriptive (no executable demo); the cluster A project IS
-the executable evidence that the linker did its job.
+Two commands: the friend-accept (same as bob4) then the rejection of Carol's befriend request to Dave. The reject closes the introduction channel with a `nack` instead of forwarding it to Dave.
 
-## Multimodule-project-derivation note
+## Step 3 — `carol5/1`: accepts on her side, then receives rejected(dave)
 
-This is the first ch07 exercise that exercises the cluster as a
-multimodule whole rather than inspecting individual mechanics.  Per
-the `multimodule-project-derivation` cross-chapter relationship
-contract (research R-008), cluster A's source canonical is
-`programs/cssg_modules/` (the book §7.7 validation example, p 61);
-cluster A's `self.glp`, `agent.glp`, `ui/mediator.glp`, and
-`ui/actors.glp` are inherited byte-exact from the canonical, with
-only `boot.glp` pruned to the 3-agent friend-mediated subset (retains
-plays 1–3 + fplays 1–3; removes 4-agent CSSG plays 4–7).  Running
-`play1` from cluster A's pruned `boot.glp` gives the same end-to-end
-behaviour as running `play1` from the canonical — the pruning removed
-plays, not protocol logic.
+`carol5` (ui/actors.glp:360–372) still issues `accept_child_intro(dave, ReqId)` after seeing the request — she got the request from Alice's side via the parent-child channel BEFORE Bob's reject propagated. She then waits in `carol5_wait_rejected` and terminates after seeing `rejected(dave)`. The accept-then-rejected pattern is the same as alice2 in fplay2 (each side decides independently; the introduction channel's nack determines the outcome). The probe shape would mirror alice2's; refer to ex-02 step 1 for the structural pattern.
 
-## Next
+## Step 4 — `dave5/1`: silent — never sees the request
 
-Exercise 6 is the Flutter setup walkthrough — the first ch07 exercise
-that pairs with a Flutter trace per the FR-011 + FR-020 contract.  It
-shows how to launch the cluster A project under the `glp_multiagent`
-Flutter app to see the same `play1` behaviour with per-agent UI
-windows.  See `ex-06-flutter-trace.md` (sibling artefact) and
-`ex-06-tutorial.md`.
+`dave5` (ui/actors.glp:374–375) is a one-clause stub: `dave5(ch(_, []))`. He outputs the empty command list and terminates. He never sees the `child_befriend` notification because Bob's reject prevented Bob's agent from forwarding the introduction to Dave. From Dave's perspective, the protocol simply never started.
+
+## Step 5 — Body components: same as fplay4's
+
+The body wiring is structurally identical to fplay4's: network2 + four agents (Alice's and Bob's with three outputs each, Carol's and Dave's with two outputs each) + four cross-merge connections + the per-agent `merge(NetIn, ChildIn, NetAndChildIn)` calls. See ex-04 step 6 for the structural detail; nothing in the body changes between fplay4 and fplay5.
+
+## Step 6 — `fplay5` itself: 11 tagged lines, terminating in parental veto
+
+```
+GLP> :limit 5000000
+Goal reduction limit set to 5000000
+
+GLP> fplay5.
+tagged(alice, cmd(connect(bob)))
+tagged(bob, notify(befriend(alice, req(1))))
+tagged(bob, cmd(decision(yes, alice, req(1))))
+tagged(bob, notify(connected(alice)))
+tagged(alice, notify(connected(bob)))
+tagged(alice, cmd(child_introduce(carol, bob, dave)))
+tagged(bob, notify(child_befriend(alice, carol, req(2))))
+tagged(carol, notify(child_befriend(alice, dave, req(1))))
+tagged(bob, cmd(reject_child_intro(carol, req(2))))
+tagged(carol, cmd(accept_child_intro(dave, req(1))))
+tagged(carol, notify(rejected(dave)))
+→ suspended
+```
+
+## The full effect
+
+**Lines 1–8 — Cold-call befriending plus child introduction proposal.** Identical to fplay4's lines 1–8. Alice and Bob become friends; Alice issues `child_introduce(carol, bob, dave)`; Alice's agent's `child_introduce` clause allocates a fresh introduction handshake channel and sends `child_intro(...)` messages over both Alice's parent-child channel (to Carol) and Alice's friend channel (to Bob). Bob's agent receives Alice's child_intro and surfaces `child_befriend(alice, carol)` (line 7); Carol's agent receives Alice's child_intro and surfaces `child_befriend(alice, dave)` (line 8). At this point both Bob and Carol have seen the request and need to decide.
+
+**Line 9 — Bob's veto.** bob5 issues `reject_child_intro(carol, req(2))`. Bob's mediator looks up `req(2)` in its pending list, retrieves the channel that came in with the `child_befriend` notification, and forwards `reject_child_intro(carol, channel(C2Ch))` to Bob's agent. The agent's `reject_child_intro` clause (agent.glp:180) matches the form `reject_child_intro(_, channel(ch(_, [nack|[]])))` — meaning the message ALREADY has a `nack` written to its channel half. The agent simply consumes the message without forwarding anything. Crucially, Bob's agent never executes the `approve_child_intro` clause (agent.glp:184) which would have forwarded the introduction to Dave via `lookup_send(child(dave), msg(bob, dave, child_intro(carol, Ch)), …)`. Dave therefore never receives a `child_befriend` notification.
+
+**Line 10 — Carol still accepts on her side.** carol5 sees her own `child_befriend(alice, dave, req(1))` notification (line 8) and issues `accept_child_intro(dave, req(1))`. Carol's mediator forwards the channel-form message; Carol's agent's `accept_child_intro` clause (agent.glp:173) writes `ack(carol)` on the introduction channel and starts `intro_await_peer/3` reading the OTHER half. But the other half was closed with `nack` by Bob's reject (the channel structure carries the nack from the parent's reject_child_intro path). `intro_await_peer/3`'s second clause matches: `intro_await_peer(Other, ch([nack|_], []), intro_rejected(Other?))`. The result `intro_rejected(dave)` is injected into Carol's UserIn.
+
+**Line 11 — Carol's panel shows rejected(dave).** Carol's agent's `intro_rejected` clause (agent.glp:153) matches the injected message and produces `rejected(dave)` on Carol's '_user'; the mediator translates and forwards to Carol's panel. carol5's `carol5_wait_rejected` matches `[rejected(dave)|_]` and terminates with the empty command list.
+
+The protocol settles: Alice and Bob remain adult friends, but the child introduction never completes. Carol learns that Dave was unreachable; Dave never knew anything was attempted. fplay5 demonstrates the parental veto power — either parent can block their own child from being befriended via this protocol, regardless of the other side's choices, by issuing reject at the approval step.
+
+## Close the session
+
+```
+GLP> :quit
+Goodbye!
+```
+
+## Reference
+
+- `programs/cssg_modules/boot.glp` lines 657–708 — `fplay5`'s body (structurally identical to fplay4's).
+- `programs/cssg_modules/ui/actors.glp` lines 333–375 — `alice5`, `bob5`, `carol5`, `dave5` scripts.
+- `programs/cssg_modules/agent.glp` line 180 — the agent's `reject_child_intro` clause (consumes the rejection without forwarding).
+- `programs/cssg_modules/agent.glp` line 184 — the agent's `approve_child_intro` clause (the path NOT taken in fplay5).
+- ex-04 — fplay4 (all accept) — full component walkthrough.
+- ex-06 (next) — fplay6: Carol rejects (the child rejects rather than the parent).

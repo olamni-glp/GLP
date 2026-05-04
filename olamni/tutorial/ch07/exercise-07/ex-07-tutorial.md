@@ -1,173 +1,99 @@
-# Exercise 07 — Cluster B project structure walkthrough (§7.7 CSSG)
+# Exercise 07 — fplay7: CSSG Dave rejects the child introduction
 
-Welcome to chapter 7, exercise 7.  This is the first cluster B exercise
-and your first encounter with the FULL §7.7 CSSG (Child-Safe Social Graph)
-validation example from book p 61.  Cluster A (ex-01..ex-06) showed you
-multimodule projects in their simplest 3-agent friend-mediated form;
-cluster B unfolds the same canonical at full scale — six files, ~2017
-lines, 7 plays + 7 fplays covering all four §7.7 use cases, 4-agent
-parent-mediated CSSG handshakes, and the multi-isolate `parent_init`/
-`child_init` Flutter pairing.  Here in ex-07 you point the REPL at the
-cluster B project directory and watch it load.  No goal — the load IS the
-exercise.  This is the project-as-runnable-artefact pedagogy: a directory
-of `.glp` files is itself a runnable program, not just a collection of
-modules.
+`fplay7` is the fourth and final CSSG play. The mirror image of fplay6: Bob approves the child introduction, Carol accepts on her side — but **Dave** rejects. The result is a 13-line tagged stream symmetric to fplay6's: Carol learns Dave rejected via the introduction channel's nack propagating back as `rejected(dave)`.
 
-## What you'll learn
-
-- **The four §7.7 CSSG use cases** that this project's plays cover:
-  - **Cold-call befriending** (plays 1–3) — Alice writes `connect(bob)`;
-    Bob's agent receives `befriend(alice, ...)`, decides yes/no; if yes,
-    both agents add each other to their friend lists.
-  - **Friend-mediated introduction** (plays 1–3) — Bob, already friends
-    with both Alice and Charlie, writes `introduce(alice, charlie)`;
-    Alice and Charlie each receive `befriend_intro(bob, ...)` and decide
-    accept/reject; if both accept they exchange messages directly.
-  - **Parent-mediated child-intro accept** (plays 4 + 6) — Alice (parent)
-    writes `child_introduce(carol, bob, dave)`; Bob receives
-    `child_befriend` and APPROVES via `approve_child_intro(...)`; Carol
-    and Dave then meet via the established channel.
-  - **Parent-mediated child-intro reject** (plays 5 + 7) — same setup as
-    the accept case but Bob rejects via `reject_child_intro` — or Bob
-    approves but the children themselves reject.
-- **The project-as-runnable-artefact pedagogy** — point the REPL at the
-  cluster B directory; project-loading mode walks the tree, loads
-  `self.glp` first to assemble the type vocabulary, loads each module
-  against its `imported procedure` declarations, resolves `agent#agent/4`,
-  `mediator#ui_mediator/5`, and `actors#...` references, and emits one
-  success line.  No build script, no makefile, no separate compile step
-  — the directory IS the artefact.
-- **Cluster B's byte-exact mandate** — unlike cluster A (where `boot.glp`
-  is derived), cluster B's six files are ALL byte-exact copies of
-  `programs/cssg_modules/`, including per-clause `%%` paraphrase comments
-  inherited from the canonical.  Section R of `test/run_all_tests.sh`
-  enforces this via per-file diff.
-
-## Cluster B project tree
-
-```
-olamni/tutorial/ch07/cssg-modules/
-├── self.glp        — 40 shared types (FriendChannel, Response, AgentChannel, …) — 161 lines
-├── agent.glp       — 1 exported (agent/4) + 13 private helper procs — 225 lines
-├── boot.glp        — 7 plays + 7 fplays + network2/network3 switches + utilities — 820 lines
-├── mad_boot.glp    — multi-isolate boot: parent_init/4 + child_init/3 + ui_actor/3 — 142 lines
-└── ui/
-    ├── mediator.glp — 1 exported (ui_mediator/5) + 3 private helpers — 184 lines
-    └── actors.glp   — 25 exported actors (alice1..dave7) for plays 1–7 — 485 lines
-```
-
-Total: 6 files, ~2017 lines.  The `ui/` subdirectory is addressed as the
-`mediator` and `actors` modules from outside (the parent submodule prefix
-`ui/` is dropped — the `-module(...)` directive in each file declares the
-external name).
-
-## Per-file structure
-
-- **`self.glp`** — shared type vocabulary for the entire CSSG application.
-  Declares 40 types covering the friend-channel handshake, the agent ↔
-  mediator interface, network input types, agent output types, the user ↔
-  mediator interface, and the mediator's pending list.  Byte-exact from
-  `programs/cssg_modules/self.glp`.  Visible to every other file via
-  ancestor-scoping — type-vocabulary backbone for ALL four §7.7 use cases.
-- **`agent.glp`** — the social agent module.  Exports `agent/4` (main loop
-  dispatching on incoming user/network messages); private helpers cover
-  stream merging, output-list maintenance, keyed message dispatch,
-  response injection, introduction handshake bookkeeping, and decision
-  routing.  Byte-exact from `programs/cssg_modules/agent.glp`.  Dispatch
-  clauses cover every §7.7 use case — `connect`, `introduce`,
-  `child_introduce`, `accept_intro`/`reject_intro`,
-  `accept_child_intro`/`reject_child_intro`, `approve_child_intro`.
-- **`boot.glp`** — the play orchestrator.  Defines 7 numbered plays
-  (`play1..play7`) + Flutter-tagged variants (`fplay1..fplay7`): plays
-  1–3 cover cold-call + friend-mediated cases (3-agent alice/bob/charlie);
-  plays 4–7 cover CSSG parent-mediated cases (4-agent
-  alice/bob/carol/dave with carol/dave as children).  Defines `network3/3`
-  cold-call + friend-to-friend clauses, `network2/2` for CSSG plays 4–7,
-  and local utilities (`tee/3`, `sink/1`, `merge/3`,
-  `send_to_user_tagged/3`).  Imports `agent#agent/4`,
-  `mediator#ui_mediator/5`, and the 25 actor procedures.  Byte-exact from
-  `programs/cssg_modules/boot.glp`.  Each play corresponds to one §7.7
-  use case + outcome combination.
-- **`mad_boot.glp`** — multi-isolate boot used by the Flutter pairing.
-  Defines `parent_init/4` (parent agent boot for CSSG plays 4–7 — sends
-  `parent_connect` cold call, then starts agent + mediator + actor + tee
-  + send_to_user_tagged), `child_init/3` (child agent boot — intercepts
-  `parent_connect` as first network message, binds the response channel,
-  then starts its agent), and `ui_actor/3` (16-clause dispatch table
-  mapping (agent_id, play_num) pairs to the actor procedure for plays
-  4–7).  Byte-exact from `programs/cssg_modules/mad_boot.glp`.  Used by
-  ex-12's Flutter pairing — these are the only plays the Flutter app
-  runs because they exercise the multi-isolate parent/child structure.
-- **`ui/mediator.glp`** — UI mediator between agent and user actors.
-  Exports `ui_mediator/5` (17-clause main loop translating agent-to-user
-  messages into user-facing notifications + a pending list, and translating
-  user commands into agent inputs).  Private `lookup_pending/4` looks up
-  pending request IDs and removes them on match.  Byte-exact from
-  `programs/cssg_modules/ui/mediator.glp`.  Every notification and every
-  user command in ALL four §7.7 use cases flows through this mediator.
-- **`ui/actors.glp`** — actor scripts playing the role of users.  Exports
-  25 actor entry points: alice1..charlie3 for plays 1–3 (3-agent), and
-  alice4..dave7 for plays 4–7 (4-agent).  Each actor is a small state
-  machine driving its `ActorChannel` based on received notifications —
-  e.g. `alice1` writes `connect(bob)`, waits for `connected(bob)`, sends
-  `hello`, waits for the `befriend_intro` with charlie, accepts, etc.
-  Byte-exact from `programs/cssg_modules/ui/actors.glp`.  Actors 1–3
-  drive cold-call + friend-mediated cases; actors 4–7 drive parent-mediated
-  CSSG cases.
-
-## Run the load demo
-
-Run this command from the GLP repo root:
+## Open the REPL and load CSSG
 
 ```bash
-cd D:/bstdev/research/GLP/GLP && printf "%s\n:quit\n" "$(pwd -W)/olamni/tutorial/ch07/cssg-modules" | "/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill 2>&1
+cd D:/bstdev/research/GLP/GLP
+"/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill
 ```
 
-Expected last two non-`Goodbye` lines:
-
 ```
-GLP> ✓ Loaded project: D:/bstdev/research/GLP/GLP/olamni/tutorial/ch07/cssg-modules
-GLP> Goodbye!
+GLP> D:/bstdev/research/GLP/GLP/programs/cssg_modules
+✓ Loaded project: D:/bstdev/research/GLP/GLP/programs/cssg_modules
 ```
 
-The single `✓ Loaded project:` line is the project-loading-mode success
-signal.  No per-file `✓ Loaded:` lines appear — project mode collapses
-success into one line covering all SIX files (vs cluster A's five).
-Cross-check: trace's **Phase A**.
+## Step 1 — `alice7/1` and `bob7/1`: same as fplay4
 
-## Reference: the trace
+`alice7` and `bob7` (ui/actors.glp:433–458) are structurally identical to alice4 and bob4. No divergence to demonstrate at the prompt.
 
-See [`ex-07-repl-trace.md`](ex-07-repl-trace.md) for the verbatim REPL
-session captured by the implementer.  The trace is byte-exact modulo the
-REPL banner block (`Build`, `Compiled`, `Working directory`, `Loaded root
-self.glp from`) and the `Goodbye!` line — these vary per build/host and
-are EXEMPT from byte-equality per `contracts/trace-file-format.md`.
+## Step 2 — `carol7/1`: accepts on her side, then receives rejected(dave)
 
-## Multimodule-project-derivation note
+`carol7` (ui/actors.glp:460–472) accepts the child befriend (same first-clause shape as carol4), then `carol7_wait_rejected` waits for `[rejected(dave)|_]`. Drive carol7:
 
-Cluster B is the second instance of the new ch07 cross-chapter relationship
-type **multimodule-project-derivation** (R-008), but unlike cluster A where
-`boot.glp` is the derivation surface, cluster B has NO derivation surface —
-all six files are byte-exact-equivalent to `programs/cssg_modules/<file>`.
-Section R of `test/run_all_tests.sh` enforces this contract via per-file
-diff: each ch07 file is compared against the canonical after stripping the
-6-line ch07 header block (the `%% ch07 cluster B — <filename>` paraphrase
-comments at the top of each file).  The diff target is zero non-header
-differences.
+```
+GLP> carol7(ch([child_befriend(alice, dave, req(1)), rejected(dave)], C7Out)).
+C7Out = [accept_child_intro(dave, req(1))]
+→ succeeds
+```
 
-Per FR-019, the canonical at `programs/cssg_modules/` is NOT modified by
-this branch — cluster B is a strict downstream copy.  If a future change
-to the canonical breaks Section R's diff, the resolution is to update the
-ch07 cluster B copy (not the canonical) to restore byte-equivalence.
+One command (the accept) — the rejected(dave) notification is consumed by carol7_wait_rejected and produces no further command. This is the same accept-then-rejected pattern as alice2 in fplay2 and dave6 in fplay6.
 
-This derivation note applies to ALL cluster B exercises (ex-07..ex-12).
-The full audit (line-by-line diff vs canonical) is encoded in Section R's
-test cases.
+## Step 3 — `dave7/1`: Dave rejects
 
-## Next
+`dave7` (ui/actors.glp:474–479) is symmetric to carol6 — a two-clause actor that immediately rejects on receiving `child_befriend(bob, carol, ReqId)`. Drive dave7:
 
-Exercise 08 runs the cold-call befriending plays — `play1.`, `play2.`,
-`play3.` — end-to-end on cluster B.  These are the same three plays
-that cluster A's ex-05 ran on the pruned 3-agent project; here you see
-them load and execute on the full 6-file CSSG canonical.  See
-[`../exercise-08/ex-08-tutorial.md`](../exercise-08/ex-08-tutorial.md).
+```
+GLP> dave7(ch([child_befriend(bob, carol, req(1))], D7Out)).
+D7Out = [reject_child_intro(carol, req(1))]
+→ succeeds
+```
+
+A single command — Dave's rejection.
+
+## Step 4 — Body components: same as fplay4's
+
+Structurally identical to fplay4's body. See ex-04 step 6.
+
+## Step 5 — `fplay7` itself: 13 tagged lines, Dave's reject
+
+```
+GLP> :limit 5000000
+Goal reduction limit set to 5000000
+
+GLP> fplay7.
+tagged(alice, cmd(connect(bob)))
+tagged(bob, notify(befriend(alice, req(1))))
+tagged(bob, cmd(decision(yes, alice, req(1))))
+tagged(bob, notify(connected(alice)))
+tagged(alice, notify(connected(bob)))
+tagged(alice, cmd(child_introduce(carol, bob, dave)))
+tagged(bob, notify(child_befriend(alice, carol, req(2))))
+tagged(carol, notify(child_befriend(alice, dave, req(1))))
+tagged(bob, cmd(approve_child_intro(carol, dave, req(2))))
+tagged(carol, cmd(accept_child_intro(dave, req(1))))
+tagged(dave, notify(child_befriend(bob, carol, req(1))))
+tagged(dave, cmd(reject_child_intro(carol, req(1))))
+tagged(carol, notify(rejected(dave)))
+→ suspended
+```
+
+## The full effect
+
+**Lines 1–11 are byte-identical to fplay4's lines 1–11**: cold-call befriending, child introduction, Bob's approval, both children receiving the request, Carol accepting on her own side, Dave receiving the request via Bob's forwarded approval. Up to and including line 11, fplay4 and fplay7 are indistinguishable.
+
+**Line 12 — Dave's reject.** dave7 sees his `child_befriend(bob, carol, req(1))` notification (line 11) and immediately produces `reject_child_intro(carol, req(1))`. Dave's mediator forwards the channel form; Dave's agent's `reject_child_intro` clause closes Dave's side of the channel with `nack`. Crucially, in fplay4 this position would have been Dave's `accept_child_intro` followed by `connected(carol)` notifications.
+
+**Line 13 — Carol receives rejected(dave).** Carol's agent had ALREADY started `intro_await_peer/3` after her own accept (line 10). She was reading the OTHER half of the introduction channel, waiting for either `ack(dave)` or `nack`. Dave's reject wrote `nack` to that side; `intro_await_peer/3`'s second clause matches `[nack|_]` and produces `intro_rejected(dave)`. Carol's agent's `intro_rejected` clause emits `rejected(dave)` on her '_user'; the mediator forwards. Carol's `carol7_wait_rejected` matches and terminates.
+
+The protocol settles: Alice and Bob remain friends; Bob approved on his side; Carol accepted on her side; but Dave rejected. The introduction does not happen. fplay7's reject path is the symmetric mirror of fplay6 — by Dave instead of Carol — and produces an equivalently shaped 13-line tagged stream.
+
+The four CSSG plays (fplay4–7) together exercise all four reject branches of the parent-mediated child introduction protocol: both accept (fplay4), Bob rejects (fplay5), Carol rejects (fplay6), Dave rejects (fplay7). Note Alice does NOT have an independent reject branch — she initiates, but the protocol does not require her further consent after her initial `child_introduce` command. The four explicit reject branches are: parent-of-initiator (Bob), child-of-initiator (Carol), other-parent (already covered by Bob's approve gate), and other-child (Dave). The protocol's design ensures that any single party can veto the friendship via their own reject without needing to coordinate.
+
+## Close the session
+
+```
+GLP> :quit
+Goodbye!
+```
+
+## Reference
+
+- `programs/cssg_modules/boot.glp` lines 763–814 — `fplay7`'s body.
+- `programs/cssg_modules/ui/actors.glp` lines 433–479 — `alice7`, `bob7`, `carol7`, `dave7` scripts.
+- `programs/cssg_modules/agent.glp` line 180 — the `reject_child_intro` clause.
+- `programs/cssg_modules/agent.glp` lines 60–69 — `intro_await_peer/3` (the nack propagation that converts Dave's reject into Carol's `rejected(dave)`).
+- ex-04 — fplay4 (all accept) — full component walkthrough.
+- ex-05 — fplay5 (Bob rejects) — parental-veto path.
+- ex-06 — fplay6 (Carol rejects) — child-veto path on initiator's child side.

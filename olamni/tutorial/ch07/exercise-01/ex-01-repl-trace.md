@@ -1,59 +1,91 @@
-# ex-01 — REPL trace (cluster A project load demo)
+# Exercise 01 — REPL trace
 
-This trace captures the verbatim REPL session for ex-01.  One phase: the
-implementer points the REPL at the cluster A project directory
-(`olamni/tutorial/ch07/simple-multimodule`), and the project-loading mode
-walks it, loading each `.glp` module in ancestor-scoped order per §7.1–§7.2.
-A clean load means SRSW + partial evaluation + type-check + compile passed
-for ALL five files in the cluster — there are no per-module load errors and
-no project-completion errors.
+Captured 2026-05-04 against `programs/cssg_modules/` on a Windows host.
 
-## Phase A — Project load
+## Steps 1–6: each fplay1 component called in isolation
 
-The implementer launches the REPL kernel snapshot and pipes the absolute
-path of the cluster A project directory.  The REPL detects this is a
-directory (not a single `.glp` file) and switches to project-loading mode
-per §7.2.  The single `✓ Loaded project:` line is the project-loading-mode
-success signal — it covers all five files (`self.glp`, `agent.glp`,
-`boot.glp`, `ui/mediator.glp`, `ui/actors.glp`) plus the ancestor-scoping
-type assembly per §7.4.
+```
+[REPL banner]
 
-```glp
-╔════════════════════════════════════════╗
-║  GLP REPL - With Type Checking         ║
-╚════════════════════════════════════════╝
+GLP> D:/bstdev/research/GLP/GLP/programs/cssg_modules
+✓ Loaded project: D:/bstdev/research/GLP/GLP/programs/cssg_modules
 
-Build: d9045902 spec+clarify+plan+tasks+analyze(ch07): spec.md (5 Clarifications Q1..Q5) + plan + research (R-001..R-012) + data-model + 5 contracts (trace + flutter-trace NEW + status-block + glp-file + test-mirror NEW) + quickstart + tasks (T001..T184; 18 phases; 11 gates) + analyze remediations applied (F1 Q-FR003a no ui/self.glp + add mad_boot.glp / F2 Q-FR014a Section R not S / F3 Q1a cluster A keeps ui/ byte-exact only boot.glp pruned / F4 Q4a ex-12 plays = 1+2+3+4+5 / F5 FR-016 7-logical-plays clarification / F6 T005b author input prompt) — first chapter with two-cluster structure + Flutter pairings + tests in run_all_tests.sh
-Compiled: 2026-02-01 (GlpEngine refactor)
-Working directory: D:\bstdev\research\GLP\GLP
+GLP> network3(ch([msg(bob, intro(alice, R))], AliceIncoming), ch(BobOutgoing, BobIncoming), ch(CharlieOutgoing, CharlieIncoming)).
+R = <unbound>
+AliceIncoming = <unbound>
+BobOutgoing = <unbound>
+BobIncoming = [msg(bob, intro(alice, X60)) | X84]
+CharlieOutgoing = <unbound>
+CharlieIncoming = <unbound>
+→ suspended
 
-Input: filename.glp to load, or goal to execute
-Commands: :quit, :help, :trace, :debug, :limit, :activate, :boot
+GLP> alice1(ch(NotifyIn, CmdOut)).
+NotifyIn = <unbound>
+CmdOut = [connect(bob) | X8]
+→ suspended
 
-Loaded root self.glp from: D:\bstdev\research\GLP\GLP\programs\self.glp
+GLP> agent(alice, [msg('_user', alice, connect(bob))], NetIn, [output('_user', AliceUser), output('_net', AliceNet)]).
+NetIn = <unbound>
+AliceUser = <unbound>
+AliceNet = [msg(bob, intro(alice, X38)) | X86]
+→ suspended
 
-GLP> ✓ Loaded project: D:/bstdev/research/GLP/GLP/olamni/tutorial/ch07/simple-multimodule
-GLP> Goodbye!
+GLP> ui_mediator(alice, ch([msg(agent, '_user', befriend(bob, Resp))], AgentIn), ch(MedIn, MedOut), [], 1).
+Resp = <unbound>
+AgentIn = <unbound>
+MedIn = <unbound>
+MedOut = [befriend(bob, req(1)) | X72]
+→ suspended
+
+GLP> tee([msg('_user', alice, connect(bob)), msg('_user', alice, send(bob, hello))], MedIn, DispCmd).
+MedIn = [msg(_user, alice, connect(bob)), msg(_user, alice, send(bob, hello))]
+DispCmd = [msg(_user, alice, connect(bob)), msg(_user, alice, send(bob, hello))]
+→ succeeds
+
+GLP> send_to_user_tagged(alice, [connect(bob), send(bob, hello)], [befriend(carol, req(1)), connected(bob)]).
+tagged(alice, cmd(connect(bob)))
+tagged(alice, cmd(send(bob, hello)))
+tagged(alice, notify(befriend(carol, req(1))))
+tagged(alice, notify(connected(bob)))
+→ succeeds
 ```
 
-The single `✓ Loaded project:` line replaces the per-file `✓ Loaded:` lines
-that single-file mode would emit; project-loading mode collapses success
-into one line covering the whole tree.  The REPL banner block (`Build`,
-`Compiled`, `Working directory`, `Loaded root self.glp from`) and the
-`Goodbye!` line are the standard REPL chrome — these vary per build/host
-and are EXEMPT from byte-equality per `contracts/trace-file-format.md`
-§Byte-equality.  The byte-exact element is the literal text
-`✓ Loaded project: D:/bstdev/research/GLP/GLP/olamni/tutorial/ch07/simple-multimodule`
-(modulo path separator on the implementer's host).
+## Step 7: full fplay1
 
----
+```
+GLP> :limit 1000000
+Goal reduction limit set to 1000000
 
-This load demo is the §7.1–§7.2 mechanic in its simplest form — point the
-REPL at a directory, get one success line back.  The cluster A canonical
-source is `programs/cssg_modules/` (the §7.7 validation example from
-book p 61); cluster A inherits its `self.glp`, `agent.glp`,
-`ui/mediator.glp`, and `ui/actors.glp` BYTE-EXACT from the canonical, with
-only `boot.glp` derived (pruned to the 3-agent friend-mediated subset per
-spec Q1+Q5+Q1a).  The §7.3 exported/private/imported procedure mechanics,
-§7.4 ancestor-scoping, §7.5 procedure-renaming, and §7.7 multi-module
-plays are all latent here — they will be inspected directly in ex-02..ex-05.
+GLP> fplay1.
+tagged(alice, cmd(connect(bob)))
+tagged(bob, notify(befriend(alice, req(1))))
+tagged(bob, cmd(decision(yes, alice, req(1))))
+tagged(bob, notify(connected(alice)))
+tagged(alice, notify(connected(bob)))
+tagged(alice, cmd(send(bob, hello)))
+tagged(bob, notify(received(alice, hello)))
+tagged(bob, cmd(connect(charlie)))
+tagged(charlie, notify(befriend(bob, req(1))))
+tagged(charlie, cmd(decision(yes, bob, req(1))))
+tagged(charlie, cmd(send(bob, hello)))
+tagged(charlie, notify(connected(bob)))
+tagged(bob, notify(connected(charlie)))
+tagged(bob, notify(received(charlie, hello)))
+tagged(bob, cmd(introduce(alice, charlie)))
+tagged(charlie, notify(befriend_intro(bob, alice, req(2))))
+tagged(alice, notify(befriend_intro(bob, charlie, req(1))))
+tagged(charlie, cmd(accept_intro(alice, req(2))))
+tagged(alice, cmd(accept_intro(charlie, req(1))))
+tagged(charlie, notify(connected(alice)))
+tagged(alice, notify(connected(charlie)))
+tagged(alice, cmd(send(charlie, Hi Charlie)))
+tagged(charlie, notify(received(alice, Hi Charlie)))
+tagged(charlie, cmd(send(alice, Hi Alice)))
+tagged(alice, notify(received(charlie, Hi Alice)))
+→ suspended
+
+GLP> :quit
+Goodbye!
+```
+
+The X-numbers (e.g., `X60`, `X84`, `X8`, `X38`, `X86`, `X72`) are fresh internal variable names per session and will differ in your run. The 25-line tagged stream from `fplay1` is byte-equivalent across runs (the protocol is deterministic).

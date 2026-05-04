@@ -1,76 +1,56 @@
-# ch07 ex-03 — Cluster A §7.4 ancestor-scoped types — REPL trace
+# Exercise 03 — REPL trace
 
-This trace captures the verbatim REPL session for ex-03.  Two phases:
-A loads cluster A (`simple-multimodule/`) — the load itself proves §7.4
-ancestor scoping at type-check time, because every module's clauses use
-types that exist nowhere except in the cluster's `self.glp`.  B runs
-`play1.` so the same types are exercised at run time as `agent.glp` /
-`mediator.glp` / `actors.glp` / `boot.glp` exchange messages along the
-typed channels.
+Captured 2026-05-04 against `programs/cssg_modules/` on a Windows host.
 
-## Phase A — Build / load
+## Steps 1–2: actor scripts driven through their notify sequences
 
-The implementer rebuilds the REPL exe from the current commit and asks
-the project loader to load the cluster A directory.  A clean
-`✓ Loaded project: ...` line means SRSW + partial evaluation +
-type-checking + compilation **all succeeded across all five modules
-(self, agent, boot, ui/mediator, ui/actors)**.  The type checker had to
-resolve every reference to `FriendContent`, `AgentChannel`, `OutputsList`,
-`UserCmdStream`, `ActorChannel`, etc., in files that **declare none of
-those types themselves**.  The only place those types are defined is
-`simple-multimodule/self.glp`; the type checker found them by walking
-the ancestor `self.glp` chain per Formal 7.1.
+```
+[REPL banner]
 
-```glp
-GLP> ✓ Loaded project: D:/bstdev/research/GLP/GLP/olamni/tutorial/ch07/simple-multimodule
+GLP> D:/bstdev/research/GLP/GLP/programs/cssg_modules
+✓ Loaded project: D:/bstdev/research/GLP/GLP/programs/cssg_modules
+
+GLP> alice3(ch([connected(bob), befriend_intro(bob, charlie, req(1))], AliceOut)).
+AliceOut = [connect(bob), send(bob, hello), reject_intro(charlie, req(1))]
+→ succeeds
+
+GLP> charlie3(ch([befriend(bob, req(1)), connected(bob), befriend_intro(bob, alice, req(2))], CharlieOut)).
+CharlieOut = [decision(yes, bob, req(1)), send(bob, hello), reject_intro(alice, req(2))]
+→ succeeds
 ```
 
-The single `✓ Loaded project:` line is the project-loader's success
-signal.  Per project-loading mode it summarises the load of the whole
-directory; the type-checker's per-module work happens inside this load
-silently because every module passed.
+(bob3 step omitted — bob3 is structurally identical to bob1 / bob2; see ex-01 step 2 for the structural pattern.)
 
-## Phase B — Primary action: run `play1.`
+## Step 5: full fplay3
 
-`play1.` exercises the cluster's types at run time: `agent.glp` reads
-`OutputsList` / `UserInStream` / `NetInStream` from its parameters and
-pattern-matches on `OutputContent` constructors (`befriend/2`,
-`connected/1`, `received/2`, `text/1`, …); `ui/mediator.glp` matches
-`AgentToUserMsg` / `MediatorToAgentMsg` and emits `UserNotify`;
-`ui/actors.glp`'s `alice1/1` / `bob1/1` / `charlie1/1` consume
-`UserNotifyStream` and produce `UserCmdStream`.  None of these files
-declares any of those types themselves — they are all inherited from
-`simple-multimodule/self.glp` via §7.4.
+```
+GLP> :limit 1000000
+Goal reduction limit set to 1000000
 
-```glp
-GLP> ✓ Loaded project: D:/bstdev/research/GLP/GLP/olamni/tutorial/ch07/simple-multimodule
-GLP> Goal reduction limit set to 1000000
-GLP> → suspended
+GLP> fplay3.
+tagged(alice, cmd(connect(bob)))
+tagged(bob, notify(befriend(alice, req(1))))
+tagged(bob, cmd(decision(yes, alice, req(1))))
+tagged(bob, notify(connected(alice)))
+tagged(alice, notify(connected(bob)))
+tagged(alice, cmd(send(bob, hello)))
+tagged(bob, notify(received(alice, hello)))
+tagged(bob, cmd(connect(charlie)))
+tagged(charlie, notify(befriend(bob, req(1))))
+tagged(charlie, cmd(decision(yes, bob, req(1))))
+tagged(charlie, cmd(send(bob, hello)))
+tagged(charlie, notify(connected(bob)))
+tagged(bob, notify(connected(charlie)))
+tagged(bob, notify(received(charlie, hello)))
+tagged(bob, cmd(introduce(alice, charlie)))
+tagged(charlie, notify(befriend_intro(bob, alice, req(2))))
+tagged(alice, notify(befriend_intro(bob, charlie, req(1))))
+tagged(charlie, cmd(reject_intro(alice, req(2))))
+tagged(alice, cmd(reject_intro(charlie, req(1))))
+→ suspended
+
+GLP> :quit
+Goodbye!
 ```
 
-`→ suspended` is the expected outcome for play1 once all three actors
-finish their scripted exchanges and the network's cold-call streams
-empty out — readers on the closed-but-not-yet-consumed tails simply
-suspend, which is the normal end-state for these CSSG plays (compare
-the bonds plays' suspension semantics in `CLAUDE.md` §12).  What
-matters for ex-03 is that **the run reached suspension** rather than
-type-failing at compile time or pattern-failing at run time, which it
-could not have done if the ancestor-scoped types from
-`simple-multimodule/self.glp` were not visible to all four sibling
-modules.
-
----
-
-The five-module project you just loaded is the §7.7 validation example
-from book p 61 (its canonical home is `programs/cssg_modules/`,
-distributed here as `olamni/tutorial/ch07/simple-multimodule/` — four
-files byte-exact from canonical, only `boot.glp` pruned per Q1a).  The
-40 protocol types in `simple-multimodule/self.glp` are visible to
-every other module in the cluster **without any import directive** —
-this is the §7.4 ancestor-scoping rule (Formal 7.1, Type Scope
-Assembly, book pp 57–58): each module's type environment is the
-**union** of all `self.glp` files from the project root down to that
-module's own directory.  Because cluster A has no `ui/self.glp` (per
-Q-FR003a in the spec), the type environment for `ui/mediator.glp` and
-`ui/actors.glp` is exactly the same as for top-level `agent.glp` and
-`boot.glp`: root `programs/self.glp` ∪ `simple-multimodule/self.glp`.
+Lines 1–17 are byte-identical to fplay1 / fplay2's first 17 lines. Lines 18–19 are both reject_intro commands — neither actor receives a `rejected(...)` notification because neither accepted on their own side.

@@ -1,160 +1,122 @@
-# Exercise 02 — Cluster A §7.3 procedure declarations
+# Exercise 02 — fplay2: Charlie rejects the friend-mediated introduction
 
-Welcome to chapter 7, exercise 2. This exercise inspects the **three
-kinds of procedure declarations** that §7.3 introduces: **private**
-(plain `procedure`), **exported** (`exported procedure`), and **imported**
-(`imported procedure`). Cluster A's `agent.glp` is the §7.3 worked
-example — it declares one EXPORTED procedure (`agent/4`) and several
-PRIVATE helpers (`merge/3`, `lookup_send/4`, …); cluster A's `boot.glp`
-is the consumer side that declares an IMPORTED reference and uses it.
+`fplay2` is the second play of CSSG. Its body wiring (boot.glp:540–570) is structurally identical to fplay1's body — the same `network3`, `agent`, `ui_mediator`, `tee`, and `send_to_user_tagged` components covered in detail in exercise-01 — with one substitution: the actor names are `alice2`, `bob2`, `charlie2` instead of `alice1`, `bob1`, `charlie1`. The new actor scripts produce a different protocol outcome: Alice and Bob still become cold-call friends, Bob still introduces Alice and Charlie, but **charlie2 rejects** the introduction from Bob, and Alice receives a `rejected(charlie)` notification instead of the greeting exchange.
 
-## What you'll learn
+This exercise walks through the actor-script divergences that produce the reject path, then runs `fplay2` to capture the full 20-line tagged stream (5 lines shorter than fplay1, terminating at Alice's `rejected(charlie)` notification rather than continuing to the greeting exchange). Because the body components are unchanged from fplay1, this exercise focuses on what is NEW in fplay2 — the actor scripts.
 
-- The three procedure-declaration kinds defined in §7.3 — what each
-  keyword means for visibility and cross-module-call permission.
-- Why `merge/3` is **private** to `agent.glp` — it is an internal
-  helper for `agent/4`'s state-machine clauses; encapsulating it
-  prevents external modules from depending on what is essentially an
-  implementation detail.
-- Why `agent/4` is **exported** — it is the public API of the agent
-  module; `boot.glp` and any future consumer wires its three streams
-  (`UserIn`, `NetIn`, `Outs`) into `network3/3` and `ui_mediator/5`.
-- How **imported procedure** declarations enable **separate
-  type-checking** — the type checker reads `boot.glp`'s
-  `imported procedure agent#agent/4` decl locally, **without ever
-  opening `agent.glp`'s source**; per Formal 7.2 the project loader
-  later reconciles the imported declaration against `agent.glp`'s
-  exported declaration when both modules are in the same project.
-
-## The three procedure-declaration kinds (book §7.3, p 56)
-
-| Kind | Syntax | Scope | Use case |
-|---|---|---|---|
-| Private | `procedure name(Type1?, Type2, ...).` | Clause bodies in this module only. | Internal helpers — list manipulation, message routing, anything other modules should not depend on. |
-| Exported | `exported procedure name(Type1?, Type2, ...).` | Clause bodies in this module + any sibling module that declares an `imported procedure module#name(...)`. | Public API — the module's stable, intended-for-external-use entry points. |
-| Imported | `imported procedure module#name(Type1?, Type2, ...).` | Clause bodies in this consumer module may call `module # name(...)`. | Cross-module dependency — declares "I will call `module#name/N` and here is the type signature I expect"; the project loader checks this matches the source module's `exported` declaration at load time. |
-
-The fundamental property §7.3 establishes is that **type-checking is
-separate per module**: when the checker processes `boot.glp`, it
-reads `boot.glp`'s `imported procedure agent#agent/4` declaration to
-type-check uses of `agent # agent(...)` — **without** reading
-`agent.glp`'s source. The type checker only needs the imported
-declaration to do its job. The actual reconciliation (does
-`agent.glp` actually export `agent/4` with this exact signature?)
-happens at **project load time** per Formal 7.2 (cross-module
-well-typing).
-
-## Cluster A's `agent.glp` declarations
-
-`agent.glp` declares one exported procedure plus several private
-helpers. The relevant lines (byte-exact from
-`programs/cssg_modules/agent.glp`):
-
-```prolog
-%% Line 20 — PRIVATE merge: stream-merging helper for handle_response
-procedure merge(Stream(X)?, Stream(X)?, Stream(X)).
-merge([X|Xs], Ys, [X?|Zs?]) :- merge(Ys?, Xs?, Zs).
-merge(Xs, [Y|Ys], [Y?|Zs?]) :- merge(Xs?, Ys?, Zs).
-merge([], Ys, Ys?).
-merge(Xs, [], Xs?).
-
-%% Line 30 — PRIVATE lookup_send: routing helper for output-key lookups
-procedure lookup_send(OutputKey?, OutputMsg?, OutputsList?, OutputsList).
-lookup_send(Key, Msg, Outs, Outs1?) :-
-    ground(Key?) |
-    lookup_send_step(Key?, Msg?, Outs?, Outs1).
-
-%% Line 113 — EXPORTED agent: the public API
-exported procedure agent(Constant?, UserInStream?, NetInStream?, OutputsList?).
-```
-
-`merge/3` and `lookup_send/4` are PRIVATE — they have no `exported`
-keyword. They are used internally by `agent/4`'s state-machine
-clauses (e.g. `merge` is called inside the `handle_response` clause at
-line 104; `lookup_send` is called from many `agent/4` clauses for
-output-stream routing). External modules cannot import them.
-
-`agent/4` is EXPORTED — the `exported procedure` keyword opens this
-procedure to consumers. The signature `(Constant?, UserInStream?,
-NetInStream?, OutputsList?)` is the public contract.
-
-## Cluster A's `boot.glp` imports
-
-`boot.glp` declares its consumer-side dependency on `agent#agent/4`
-(byte-exact from cluster A's pruned `boot.glp`, around line 27):
-
-```prolog
-%% From agent.glp (sibling)
-imported procedure agent#agent(Constant?, UserInStream?, NetInStream?, OutputsList?).
-```
-
-The signature exactly matches `agent.glp`'s exported declaration. The
-type checker uses ONLY this imported declaration when verifying the
-six places where `boot.glp`'s `play1`/`play2`/`play3` (and
-`fplay1`/`fplay2`/`fplay3`) call `agent # agent(...)`. No access to
-`agent.glp`'s source is required for type-checking `boot.glp`.
-
-## Run the cross-module call (exported, succeeds)
+## Open the REPL and load CSSG
 
 ```bash
-cd D:/bstdev/research/GLP/GLP && printf "%s\n:limit 1000000\nplay1.\n:quit\n" "$(pwd -W)/olamni/tutorial/ch07/simple-multimodule" | "/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill 2>&1
+cd D:/bstdev/research/GLP/GLP
+"/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill
 ```
 
-Expected: `✓ Loaded project: ...simple-multimodule` followed by
-`→ suspended` for `play1`. The `→ suspended` is the normal terminal
-state for these multi-process plays (the agent loops never close
-their input streams). Cross-check: trace **Phase A + Phase B**.
-
-This succeeds because `agent#agent/4` is the EXPORTED entry point of
-the agent module and `boot.glp`'s `imported procedure` declaration
-matches its signature.
-
-## Try the private call (probes the PRIVATE boundary)
-
-```bash
-cd D:/bstdev/research/GLP/GLP && printf "%s\n:limit 1000000\nagent # merge([1,2], [3,4], X).\n:quit\n" "$(pwd -W)/olamni/tutorial/ch07/simple-multimodule" | "/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill 2>&1
+```
+GLP> D:/bstdev/research/GLP/GLP/programs/cssg_modules
+✓ Loaded project: D:/bstdev/research/GLP/GLP/programs/cssg_modules
 ```
 
-Expected (and CAPTURED VERBATIM in trace **Phase C**):
-`→ failed` followed by `Error: [syntax] Expected "." at end of clause at
-Line 1, Column 7`.
+## Step 1 — `alice2/1`: same accept-the-intro, then wait for rejection
 
-**Read the trace's Phase C annotation carefully**: this is a syntax
-error from the REPL goal parser, NOT a privacy-violation error. The
-REPL's interactive goal prompt does not support `module#proc(...)`
-syntax — it rejects the `#` character on parsing. The same error
-appears for `agent#agent(...)` at the goal prompt; the rejection is
-universal across `module#proc` goals, regardless of whether the
-target is private or exported.
+`alice2` (ui/actors.glp:110–135) issues `connect(bob)` first, accepts the intro to Charlie when it arrives, and then sits in `alice2_wait_rejected` waiting for a `rejected(charlie)` notification. Drive alice2 through the full notify sequence she would receive in fplay2:
 
-So where IS the privacy boundary enforced? **At clause-body
-cross-module-call resolution time during project load** (Formal 7.2):
-if `boot.glp` had `imported procedure agent#merge/3.` plus a clause
-body calling `agent # merge(...)`, the project loader would reject
-the load because `agent.glp` declares `merge/3` PRIVATE (no
-`exported` keyword). The successful `play1` proves the EXPORTED
-side; the absence of any working REPL goal that reaches `agent#merge/3`
-proves the syntactic gate is set; the conceptual mismatch detection at
-project load is what enforces privacy.
+```
+GLP> alice2(ch([connected(bob), befriend_intro(bob, charlie, req(1)), rejected(charlie)], AliceOut)).
+AliceOut = [connect(bob), send(bob, hello), accept_intro(charlie, req(1))]
+→ succeeds
+```
 
-## Multimodule-project-derivation note
+Three commands in `AliceOut`: `connect(bob)` (the initial cold-call), `send(bob, hello)` (after Alice sees `connected(bob)`), and `accept_intro(charlie, req(1))` (after Alice sees `befriend_intro(bob, charlie, req(1))`). Alice does NOT yet know that Charlie will reject — she accepts the intro on her side. Then `alice2_wait_rejected` consumes the `rejected(charlie)` notification and terminates with the empty command list. The contrast with `alice1` is entirely in what comes AFTER the intro: alice1 would have waited for `connected(charlie)` and then sent `Hi Charlie`; alice2 waits for `rejected(charlie)` and terminates.
 
-Cluster A's `agent.glp` is **byte-exact** from
-`programs/cssg_modules/agent.glp` per spec amendment Q1a — including
-the `merge/3`/`lookup_send/4` private decls and the
-`exported procedure agent/4` at line 113. Cluster A's `boot.glp` is
-the ONLY DERIVED cluster-A file (per R-010 pruning content); the
-`imported procedure agent#agent/4` declaration is retained from
-canonical because it is needed for the 3-agent plays kept in cluster
-A. Section R of `test/run_all_tests.sh` enforces byte-equivalence to
-canonical for cluster B's files and (transitively) for cluster A's
-four byte-exact files.
+## Step 2 — `bob2/1`: structurally identical to bob1
 
-## Next
+`bob2` (ui/actors.glp:137–167) has the same clauses as bob1, just renamed. Bob is the introducer in both plays — he accepts Alice's cold-call, accepts Charlie's cold-call, and issues `introduce(alice, charlie)`. He does not see the introduction outcome on either side. There is no behavioral divergence to demonstrate at the prompt; refer back to ex-01 step 2 (alice1 demonstration) for the structural pattern bob2 follows.
 
-Exercise 3 is §7.4 — ancestor-scoping of types. It inspects how
-`self.glp`'s type definitions (`Stream`, `Constant`, etc.) are visible
-to every module in the cluster A project without any per-module type
-import or re-declaration. Cross-check the module-system invariants
-exercised here against the type-system invariants exercised next:
-together they realise the §7.x module abstraction.
+## Step 3 — `charlie2/1`: the rejection — charlie2_wait_intro produces `reject_intro` not `accept_intro`
+
+`charlie2` (ui/actors.glp:169–184) is the agent that diverges decisively from charlie1. The first clause is identical (Charlie accepts Bob's cold-call befriend), but `charlie2_wait_intro` rejects the introduction instead of accepting it:
+
+```
+charlie2_wait_intro([befriend_intro(bob, alice, ReqId)|_], [reject_intro(alice, ReqId?)]) :-
+    ground(ReqId?) | true.
+```
+
+Compare to charlie1's accept clause: `[accept_intro(alice, ReqId?)|Out?]` followed by `charlie1_wait_alice_msg(In?, Out)`. charlie2 produces `[reject_intro(alice, ReqId)]` (a closed list of length one) and terminates — no further messages.
+
+Drive charlie2 through the full notify sequence she would receive in fplay2:
+
+```
+GLP> charlie2(ch([befriend(bob, req(1)), connected(bob), befriend_intro(bob, alice, req(2))], CharlieOut)).
+CharlieOut = [decision(yes, bob, req(1)), send(bob, hello), reject_intro(alice, req(2))]
+→ succeeds
+```
+
+Three commands: `decision(yes, bob, req(1))` (Charlie accepts the cold-call from Bob), `send(bob, hello)` (Charlie's greeting to Bob, same as charlie1), and `reject_intro(alice, req(2))` (the divergence — Charlie rejects the introduction Bob proposed). The closed `[reject_intro(alice, req(2))]` is the last command Charlie ever issues; the actor terminates here.
+
+## Step 4 — Body components identical to fplay2's
+
+The other components of fplay2's body — `network3`, `agent`, `ui_mediator`, `tee`, `send_to_user_tagged` — are the same procedures as in fplay1's body. The bindings each component produces in isolation are documented in exercise-01 steps 1, 3, 4, 5, and 6; running them again with fplay2-shape inputs produces the same shape of binding because the components are protocol-step-agnostic. The protocol-specific behavior comes entirely from the actors.
+
+## Step 5 — `fplay2` itself: 20 tagged lines, terminating in rejection
+
+Set the goal-reduction limit and call fplay2:
+
+```
+GLP> :limit 1000000
+Goal reduction limit set to 1000000
+
+GLP> fplay2.
+tagged(alice, cmd(connect(bob)))
+tagged(bob, notify(befriend(alice, req(1))))
+tagged(bob, cmd(decision(yes, alice, req(1))))
+tagged(bob, notify(connected(alice)))
+tagged(alice, notify(connected(bob)))
+tagged(alice, cmd(send(bob, hello)))
+tagged(bob, notify(received(alice, hello)))
+tagged(bob, cmd(connect(charlie)))
+tagged(charlie, notify(befriend(bob, req(1))))
+tagged(charlie, cmd(decision(yes, bob, req(1))))
+tagged(charlie, cmd(send(bob, hello)))
+tagged(charlie, notify(connected(bob)))
+tagged(bob, notify(connected(charlie)))
+tagged(bob, notify(received(charlie, hello)))
+tagged(bob, cmd(introduce(alice, charlie)))
+tagged(charlie, notify(befriend_intro(bob, alice, req(2))))
+tagged(alice, notify(befriend_intro(bob, charlie, req(1))))
+tagged(charlie, cmd(reject_intro(alice, req(2))))
+tagged(alice, cmd(accept_intro(charlie, req(1))))
+tagged(alice, notify(rejected(charlie)))
+→ suspended
+```
+
+Twenty tagged lines, terminating in `→ suspended` once the actors' scripts have completed and the protocol channels reach their steady-state wait. Five fewer lines than fplay1 — the introduction's accept handshake produces a `connected(charlie)` notification on Alice's panel, but the rejection produces a `rejected(charlie)` notification with no greeting exchange follow-up.
+
+## The full effect
+
+Lines 1–17 are byte-identical to fplay1's first 17 lines: the cold-call befriending of Alice/Bob and Bob/Charlie, plus Bob's introduce, plus both `befriend_intro` notifications appearing on Alice's and Charlie's panels. The protocols are the same up to and including the moment both parties have been notified of the proposed introduction.
+
+**Line 18 is where fplay1 and fplay2 diverge.** In fplay1, `charlie1_wait_intro` produced `accept_intro(alice, req(2))`; in fplay2, `charlie2_wait_intro` produces `reject_intro(alice, req(2))`. Both forms travel through Charlie's mediator → Charlie's agent.
+
+Inside Charlie's agent, the `reject_intro` clause (agent.glp:140) consumes the message but does NOT call `intro_await_peer` (which is what the accept clause does to wait for the peer's ack). Instead the agent simply recurses without producing any '_user' output, and crucially without binding the introduction's handshake channel — the `nack` half of `IntroChannel` propagates back through the channel structure that Bob's introduce had set up.
+
+Line 19 — `alice, cmd(accept_intro(charlie, req(1)))` — shows Alice still issuing her own accept on her side. She was notified at the same time as Charlie and made her decision independently. Her `accept_intro` reaches Alice's agent, calls `intro_await_peer` on the introduction channel, and reads the **nack** from the channel's writer side (Charlie's reject closed the channel with a nack). `intro_await_peer`'s second clause matches: `intro_await_peer(Other, ch([nack|_], []), intro_rejected(Other?))`. The result `intro_rejected(charlie)` is injected into Alice's UserIn stream, where Alice's agent's `intro_rejected` clause produces `rejected(charlie)` on her '_user' output (line 20). Alice's actor `alice2_wait_rejected` consumes this notification and terminates without further commands.
+
+Charlie's actor terminated at his own `reject_intro`. Bob's actor's `bob2_wait_charlie_msg` saw `received(charlie, hello)` (line 14) and produced `introduce(alice, charlie)` (line 15); after that Bob has no further commands and his actor sits at the end. All three actors have run to completion; the protocol's open channels sit on reader-waits; the goal suspends.
+
+The reject path tested by fplay2 confirms the cold-call protocol's introduction-channel handshake: a `nack` written to the channel by either party propagates as `rejected(Other)` to the other party, regardless of what that other party decided on their own side. Alice's accept does not override Charlie's reject — the nack closes the introduction.
+
+## Close the session
+
+```
+GLP> :quit
+Goodbye!
+```
+
+## Reference
+
+- `programs/cssg_modules/boot.glp` lines 540–570 — `fplay2`'s body (structurally identical to fplay1's, with `actorN→actor2` substitution).
+- `programs/cssg_modules/ui/actors.glp` lines 110–184 — `alice2`, `bob2`, `charlie2` scripts.
+- `programs/cssg_modules/agent.glp` lines 60–69 — `intro_await_peer/3`, the `nack` propagation that converts Charlie's reject into Alice's `rejected(charlie)`.
+- `programs/cssg_modules/agent.glp` lines 140–142 — the agent's `reject_intro` clause.
+- ex-01 — fplay1's body components walked through individually.
+- ex-03 (next) — fplay3: Alice and Charlie BOTH reject the introduction.

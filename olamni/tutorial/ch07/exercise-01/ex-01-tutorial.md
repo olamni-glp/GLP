@@ -1,121 +1,174 @@
-# Exercise 01 — Cluster A project structure + load demo (§7.1–§7.2)
+# Exercise 01 — fplay1: cold-call befriending + friend-mediated introduction (both accept)
 
-Welcome to chapter 7, exercise 1.  This is the first ch07 exercise and the
-first tutorial exercise to work with a MULTIMODULE PROJECT rather than a
-single `.glp` file.  Cluster A — the "simple-multimodule" project — is a
-3-agent friend-mediated subset of the §7.7 validation example.  Here in
-ex-01 you point the REPL at the project directory and watch it load.
+`fplay1` is the first play of the CSSG project. It wires three social agents (Alice, Bob, Charlie) together through the cold-call befriending and friend-mediated introduction protocols, with both sides accepting at every choice point. The play's body is a conjunction of seven goals per agent — `actors#aliceN`, `tee`, `agent#agent`, `mediator#ui_mediator`, a second `tee`, `send_to_user_tagged` — plus one shared `network3` switch that routes the cold calls between the three agents. This exercise walks through each component of fplay1's body individually at the REPL prompt, then runs the assembled play to observe the full 25-binding choreography.
 
-## What you'll learn
+Each step below corresponds to one line of fplay1's body in `programs/cssg_modules/boot.glp` (lines 508–538). The seven step components compose into the full protocol you'll see in step 8.
 
-- **§7.1 design principles** — module hierarchy mirrors the filesystem
-  (one directory per submodule, one `.glp` per leaf module); types in
-  `self.glp` are visible to ALL modules under that directory via
-  ancestor-scoping; each module is type-checked self-contained against
-  its imports, never against the body of other modules; structural type
-  compatibility lets two modules share a type by name as long as the
-  shapes agree.
-- **§7.2 project-loading mode** — point the REPL at a directory (instead
-  of a single `.glp`) and the REPL walks the tree, loading each `.glp`
-  module in ancestor-scoped order, assembling the type vocabulary per
-  §7.4, and resolving cross-module imports per §7.3.
-- **What `✓ Loaded project:` means** — SRSW + partial evaluation +
-  type-check + compile passed for ALL files in the project, AND the
-  project-completion checks (cross-module import resolution, type
-  vocabulary assembly, no orphan exports) all passed.  One line replaces
-  the five per-file `✓ Loaded:` lines that single-file mode would emit.
-- **The cluster A shape** — five `.glp` files across two directories
-  (root + `ui/`), one canonical source (`programs/cssg_modules/`), one
-  derivation (`boot.glp` pruned to the 3-agent subset per spec Q1+Q5+Q1a).
-
-## Cluster A project structure
-
-```
-olamni/tutorial/ch07/simple-multimodule/
-├── self.glp           — shared type vocabulary (FriendChannel, Response, …)
-├── agent.glp          — exported agent/4 + private merge/3 + lookup_send/4
-├── boot.glp           — DERIVED: 3-agent network/play/fplay orchestration
-└── ui/
-    ├── mediator.glp   — exported ui_mediator/5 + 3 private helpers
-    └── actors.glp     — 16 exported actors (alice1..dave7); cluster A reaches
-                         9 of them via boot.glp's pruned imports
-```
-
-Each file's role at a glance:
-
-- `self.glp` — root type vocabulary for the cluster (book §7.4 ancestor-
-  scoping source).  Defines `FriendChannel`, `FriendStream`, `FriendMsg`,
-  `FriendContent`, `Response`, etc.  Visible to every other file in the
-  project.
-- `agent.glp` — the social agent module (book §7.3 exported/private
-  example).  Exports `agent/4`; the helpers `merge/3` and `lookup_send/4`
-  are private to this module.  No cross-module imports — fully self-
-  contained at module level.
-- `boot.glp` — the play orchestrator (the ONLY derived file in cluster A).
-  Imports `agent#agent/4`, `mediator#ui_mediator/5`, and the 3-agent actor
-  procedures (`alice1..charlie3`).  Wires them together via `network/3`
-  cold-call clauses; defines the `play1`, `play2`, `play3` entry points
-  and their `fplay1..fplay3` multi-isolate variants.
-- `ui/mediator.glp` — UI mediator between agent and user actors (book §7.3
-  example with 1 export + 3 privates).  Exports `ui_mediator/5`.  The `ui/`
-  directory means this module is addressed as `mediator#ui_mediator/5` from
-  outside (with `ui/` interpreted as the parent submodule).
-- `ui/actors.glp` — actor scripts for CSSG plays.  Exports 16 actors total
-  (alice1-7, bob1-7, charlie1-3, carol4-7, dave4-7); cluster A reaches the
-  9 used by play1+play2+play3 via boot.glp's pruned imports.
-
-## Run the load demo
-
-Run this command from the GLP repo root:
+## Open the REPL and load CSSG
 
 ```bash
-cd D:/bstdev/research/GLP/GLP && printf "%s\n:quit\n" "$(pwd -W)/olamni/tutorial/ch07/simple-multimodule" | "/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill 2>&1
+cd D:/bstdev/research/GLP/GLP
+"/c/Users/gavri/dart-sdk/bin/dart" run glp_runtime/.dart_tool/repl.dill
 ```
 
-Expected last two non-`Goodbye` lines:
-
 ```
-GLP> ✓ Loaded project: D:/bstdev/research/GLP/GLP/olamni/tutorial/ch07/simple-multimodule
-GLP> Goodbye!
+GLP> D:/bstdev/research/GLP/GLP/programs/cssg_modules
+✓ Loaded project: D:/bstdev/research/GLP/GLP/programs/cssg_modules
 ```
 
-The single `✓ Loaded project:` line is the project-loading-mode success
-signal.  No per-file `✓ Loaded:` lines appear — project mode collapses
-success into one line covering all five files.  Cross-check: trace's
-**Phase A**.
+The single `✓ Loaded project:` line covers SRSW, partial evaluation, type checking, and bytecode compilation across all four CSSG modules — `agent.glp`, `ui/mediator.glp`, `ui/actors.glp`, and `boot.glp` — and resolves the `imported procedure` declarations between them. The procedures from each module are now callable at the prompt by their bare names.
 
-## Reference: the trace
+## Step 1 — `network3/3`: routing a cold-call between agents
 
-See [`ex-01-repl-trace.md`](ex-01-repl-trace.md) for the verbatim REPL
-session captured by the implementer.  The trace is byte-exact modulo the
-REPL banner block (`Build`, `Compiled`, `Working directory`, `Loaded root
-self.glp from`) and the `Goodbye!` line — these vary per build/host and
-are EXEMPT from byte-equality per `contracts/trace-file-format.md`.
+`fplay1` opens with `network3(ch(AliceNetOut?, AliceNetIn), ch(BobNetOut?, BobNetIn), ch(CharlieNetOut?, CharlieNetIn))` (boot.glp:509–511). This three-channel switch sits between the three agents' network sides: when one agent writes a `msg(target, content)` cold-call to its `NetOut`, the switch matches the target and writes the same message to that target's `NetIn`. To see one routing rule in action, exercise it directly with one closed cold-call from Alice to Bob and the other agents quiet:
 
-## Multimodule-project-derivation note
+```
+GLP> network3(ch([msg(bob, intro(alice, R))], AliceIncoming), ch(BobOutgoing, BobIncoming), ch(CharlieOutgoing, CharlieIncoming)).
+R = <unbound>
+AliceIncoming = <unbound>
+BobOutgoing = <unbound>
+BobIncoming = [msg(bob, intro(alice, X60)) | X84]
+CharlieOutgoing = <unbound>
+CharlieIncoming = <unbound>
+→ suspended
+```
 
-Cluster A is the first instance of the new ch07 cross-chapter relationship
-type **multimodule-project-derivation** (R-008): four of cluster A's five
-files are BYTE-EXACT copies of `programs/cssg_modules/`, and the fifth
-(`boot.glp`) is the ONLY derivation surface — pruned per spec Clarifications
-Q1 + Q5 + Q-amendment Q1a.  Specifically:
+`BobIncoming` was bound to a list whose head is `msg(bob, intro(alice, R))` — the same cold-call Alice wrote, now arriving on Bob's incoming side. The switch performed one routing step. The other agents' channels stayed unbound because no traffic was directed at them. The recursive `network3` call then hit unbound stream tails on all sides and suspended — that is the steady-state wait. The X-numbers (`X60`, `X84`) are fresh internal var names; yours will differ.
 
-- `self.glp`, `agent.glp`, `ui/mediator.glp`, `ui/actors.glp` are
-  byte-exact from `programs/cssg_modules/<file>` and inherit the existing
-  canonical's per-clause `%%` paraphrase comments unchanged.
-- `boot.glp` is pruned: the 4-agent actor imports (`alice4..dave7`),
-  friend-to-friend `network3/3` clauses, `network2/2` entirely, and plays
-  4–7 + fplays 4–7 are removed.  Retained: 3-agent imports
-  (`alice1..charlie3`), the cold-call `network3/3` clauses + base case,
-  local utilities (`tee/sink/send_to_user_tagged/merge`), plays 1–3, and
-  fplays 1–3.
+## Step 2 — `actors#alice1/1`: the scripted Alice actor
 
-This derivation note applies to ALL cluster A exercises (ex-01..ex-06).
-The full audit (line-by-line diff vs canonical) lives in `boot.glp`'s
-header comment block.
+Each agent's role in fplay1 is driven by a scripted actor. Alice's script `alice1` (ui/actors.glp:14–17) writes `connect(bob)` as its first command and then waits for `connected(bob)` to come back before doing anything else. Run alice1 alone with its channel ends unbound:
 
-## Next
+```
+GLP> alice1(ch(NotifyIn, CmdOut)).
+NotifyIn = <unbound>
+CmdOut = [connect(bob) | X8]
+→ suspended
+```
 
-Exercise 02 zooms in on §7.3 procedure declarations — exported, private,
-and imported — and inspects them directly in `agent.glp` and
-`boot.glp`.  See [`../exercise-02/ex-02-tutorial.md`](../exercise-02/ex-02-tutorial.md).
+`CmdOut` was bound to `[connect(bob) | tail]` — alice1 has issued the cold-call command. `NotifyIn` is unbound because no one has notified alice1 of anything yet (in the full play, this is the channel the mediator writes notifications onto). alice1 then suspended in `alice1_wait_connected` waiting for the `connected(bob)` notification that the mediator will produce after Bob's accept.
+
+## Step 3 — `agent#agent/4` (Alice side): the social agent processing connect
+
+Alice's agent (boot.glp:515–516) is the next component in fplay1's body. It receives Alice's user commands on its `UserInStream` (the same stream alice1 wrote to, after passing through tee + mediator), and produces network output. Run the agent with one closed user command and the other inputs open:
+
+```
+GLP> agent(alice, [msg('_user', alice, connect(bob))], NetIn, [output('_user', AliceUser), output('_net', AliceNet)]).
+NetIn = <unbound>
+AliceUser = <unbound>
+AliceNet = [msg(bob, intro(alice, X38)) | X86]
+→ suspended
+```
+
+Alice's agent matched its connect-handling clause (agent.glp line 111) and called `lookup_send('_net', msg(bob, intro(alice, Resp)), …)` which bound `AliceNet` to a list whose head is the cold-call `msg(bob, intro(alice, Resp))`. This is exactly the message the network3 switch in step 1 routes to Bob. The agent then suspended on its recursive call (`UserInStream` = `[]` triggers `inject_msg/5` awaiting the `Resp` reader; the agent recurses with the suspended UserIn1 and parks). `AliceUser` stays unbound — the connect clause does not write to '_user'.
+
+## Step 4 — `mediator#ui_mediator/5`: translating agent → UI
+
+The mediator (boot.glp:517–518) sits between the agent's '_user' output and the UI commands the actor produces. When the agent writes a non-ground notification like `befriend(From, Resp)` (where `Resp` is the response variable the agent will eventually read), the mediator allocates a fresh request id, replaces the response variable, and forwards a UI-shaped notification:
+
+```
+GLP> ui_mediator(alice, ch([msg(agent, '_user', befriend(bob, Resp))], AgentIn), ch(MedIn, MedOut), [], 1).
+Resp = <unbound>
+AgentIn = <unbound>
+MedIn = <unbound>
+MedOut = [befriend(bob, req(1)) | X72]
+→ suspended
+```
+
+`MedOut` was bound to `[befriend(bob, req(1)) | tail]` — the mediator translated the agent's `befriend(bob, Resp)` (with response variable) into the UI form `befriend(bob, req(1))` (with concrete request id). The mediator stored a `pending(req(1), response(Resp))` entry in its pending list (the fourth arg of ui_mediator's recursive call) so that when the user later sends a `decision(yes, bob, req(1))` command, the mediator can look up `Resp` again and forward `decision(yes, bob, response(Resp))` to the agent. The mediator then suspended awaiting more incoming traffic.
+
+## Step 5 — `tee/3`: duplicating a stream into two consumers
+
+fplay1 calls `tee/3` twice per agent (boot.glp:514, 519): first to fork the actor's command output into a mediator-input copy and a display copy, second to fork the mediator's notification output into an actor-input copy and a display copy. tee with a closed CSSG-shape command list:
+
+```
+GLP> tee([msg('_user', alice, connect(bob)), msg('_user', alice, send(bob, hello))], MedIn, DispCmd).
+MedIn = [msg(_user, alice, connect(bob)), msg(_user, alice, send(bob, hello))]
+DispCmd = [msg(_user, alice, connect(bob)), msg(_user, alice, send(bob, hello))]
+→ succeeds
+```
+
+Both outputs got bound to identical copies of the input stream. In fplay1 the first copy flows into the mediator (which translates UI commands into agent-shape user messages), the second flows into the display (where `send_to_user_tagged` wraps it for Flutter panels). Same content, two consumers.
+
+## Step 6 — `send_to_user_tagged/3`: tagging cmd/notify lines for Flutter
+
+The last per-agent component (boot.glp:520) wraps the command and notification streams into `tagged(Id, cmd(...))` and `tagged(Id, notify(...))` lines that the Flutter app's `_routeOutput` parses into per-agent panels. Each call to `send_to_user_tagged` produces one `_output/1` side effect per element. With closed cmd and notify lists you see four tagged lines emitted directly:
+
+```
+GLP> send_to_user_tagged(alice, [connect(bob), send(bob, hello)], [befriend(carol, req(1)), connected(bob)]).
+tagged(alice, cmd(connect(bob)))
+tagged(alice, cmd(send(bob, hello)))
+tagged(alice, notify(befriend(carol, req(1))))
+tagged(alice, notify(connected(bob)))
+→ succeeds
+```
+
+The four `tagged(...)` lines are stdout side effects from `_output/1` — they are exactly the lines the Flutter app receives on its isolate stdout and routes via `_routeOutput` into Alice's panel. The `cmd(...)` lines render with a `>` prefix in the panel; the `notify(...)` lines render with a `<` prefix. The procedure then succeeds because both lists were closed.
+
+## Step 7 — `fplay1` itself: the components composed
+
+The seven components above (network3 plus six per agent × three agents) compose into fplay1's body. When you call `fplay1` at the prompt the entire choreography unfolds, and `send_to_user_tagged` emits each `cmd(...)` and `notify(...)` line as soon as the corresponding agent step produces it. Set the goal-reduction limit high enough to let the whole protocol run, then call:
+
+```
+GLP> :limit 1000000
+Goal reduction limit set to 1000000
+
+GLP> fplay1.
+tagged(alice, cmd(connect(bob)))
+tagged(bob, notify(befriend(alice, req(1))))
+tagged(bob, cmd(decision(yes, alice, req(1))))
+tagged(bob, notify(connected(alice)))
+tagged(alice, notify(connected(bob)))
+tagged(alice, cmd(send(bob, hello)))
+tagged(bob, notify(received(alice, hello)))
+tagged(bob, cmd(connect(charlie)))
+tagged(charlie, notify(befriend(bob, req(1))))
+tagged(charlie, cmd(decision(yes, bob, req(1))))
+tagged(charlie, cmd(send(bob, hello)))
+tagged(charlie, notify(connected(bob)))
+tagged(bob, notify(connected(charlie)))
+tagged(bob, notify(received(charlie, hello)))
+tagged(bob, cmd(introduce(alice, charlie)))
+tagged(charlie, notify(befriend_intro(bob, alice, req(2))))
+tagged(alice, notify(befriend_intro(bob, charlie, req(1))))
+tagged(charlie, cmd(accept_intro(alice, req(2))))
+tagged(alice, cmd(accept_intro(charlie, req(1))))
+tagged(charlie, notify(connected(alice)))
+tagged(alice, notify(connected(charlie)))
+tagged(alice, cmd(send(charlie, Hi Charlie)))
+tagged(charlie, notify(received(alice, Hi Charlie)))
+tagged(charlie, cmd(send(alice, Hi Alice)))
+tagged(alice, notify(received(charlie, Hi Alice)))
+→ suspended
+```
+
+Twenty-five tagged lines, alternating between agents and between cmd/notify, terminating in `→ suspended` once every actor's script has run to completion and the protocol's channels are at their steady-state wait. Each line is one observable choreography step.
+
+## The full effect
+
+Reading the 25 tagged lines from top to bottom traces the entire cold-call + friend-mediated-introduction protocol:
+
+**Lines 1–7 — Alice and Bob become friends (cold call).** Alice's actor issues `connect(bob)` (line 1); the mediator forwards to Alice's agent, the agent emits a cold-call to '_net' which network3 routes to Bob's NetIn; Bob's agent matches its NetIn cold-call clause and produces `befriend(alice, Resp)` on Bob's '_user'; Bob's mediator translates this to `befriend(alice, req(1))` (line 2); Bob's actor `bob1` matches the befriend pattern and writes `decision(yes, alice, req(1))` (line 3); the mediator looks up the pending `Resp` and sends `decision(yes, alice, response(accept(LocalCh)))` to Bob's agent; the agent runs `bind_response` + `handle_response` which adds a friend output and emits `connected(alice)` (line 4); the response also flows back to Alice's agent which adds its own friend output and emits `connected(bob)` (line 5); Alice's actor `alice1_wait_connected` matches and issues `send(bob, hello)` (line 6); the message routes through the friend output, lands in Bob's NetIn as a friend-typed message, and Bob's agent emits `received(alice, hello)` (line 7).
+
+**Lines 8–14 — Bob and Charlie become friends (Bob initiates a fresh cold call).** Bob's actor `bob1_wait_alice_msg` saw the `received(alice, _)` notification (line 7) and now issues `connect(charlie)` (line 8). The same cold-call protocol runs again with Bob as initiator and Charlie as responder, producing the exact mirror of lines 2–7 but for Bob/Charlie (lines 9–14).
+
+**Lines 15–21 — Bob introduces Alice and Charlie to each other.** Bob's actor `bob1_wait_charlie_msg` saw Charlie's `received(charlie, _)` notification (line 14) and now issues `introduce(alice, charlie)` (line 15). Bob's agent matches the introduce clause, allocates a fresh handshake channel, and sends `intro(charlie, QPCh)` to Alice's friend stream and `intro(alice, PQCh)` to Charlie's friend stream; both agents convert these to `befriend_intro(bob, ...)` notifications on their '_user' streams (lines 16–17, mediator-translated with req IDs); both actors `alice1_wait_intro` and `charlie1_wait_intro` accept (lines 18–19); both agents do the `accept_intro` handshake which binds both halves of the introduction channel; both agents emit `connected(...)` for the new friend (lines 20–21).
+
+**Lines 22–25 — Alice and Charlie greet each other (the third pair text exchange).** Alice's actor `alice1_wait_charlie` issues `send(charlie, 'Hi Charlie')` (line 22); Charlie receives it (line 23); Charlie's actor `charlie1_wait_alice_msg` issues `send(alice, 'Hi Alice')` (line 24); Alice receives it (line 25). At this point every actor's script has reached its terminating clause; the protocol's open streams sit on reader-waits; the goal suspends.
+
+The three pairs (Alice–Bob, Bob–Charlie, Alice–Charlie) all become friends through cold-call befriending plus a single act of friend-mediated introduction, and exchange one message each. fplay1 is the both-accept happy-path of this protocol — the next two exercises (fplay2, fplay3) reuse this exact orchestration structure with different actor scripts that produce reject branches at specific choice points.
+
+## Close the session
+
+```
+GLP> :quit
+Goodbye!
+```
+
+## Reference
+
+- `programs/cssg_modules/boot.glp` lines 508–538 — `fplay1`'s body (the 19 conjunction goals).
+- `programs/cssg_modules/agent.glp` lines 107–219 — `agent/4`'s clauses for every protocol message type.
+- `programs/cssg_modules/ui/mediator.glp` lines 27–178 — `ui_mediator/5`'s clauses for every direction of UI translation.
+- `programs/cssg_modules/ui/actors.glp` lines 14–104 — `alice1`, `bob1`, `charlie1` scripts.
+- ex-02 (next) — `fplay2`: same orchestration with `alice2`/`bob2`/`charlie2` actor scripts producing the Charlie-rejects-introduction branch.
