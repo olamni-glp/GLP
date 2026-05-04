@@ -20,7 +20,7 @@ This produces a single binary (`.exe` on Windows; unsuffixed on Linux/macOS) at 
 | 4 | Basic Concurrent Programming | [`ch04/ch04_tutorial.md`](ch04/ch04_tutorial.md) | pending review (2026-04-30) |
 | 5 | Types and Modes | [`ch05/ch05_tutorial.md`](ch05/ch05_tutorial.md) | implemented 2026-05-01 |
 | 6 | Typed Programming | [`ch06/ch06_tutorial.md`](ch06/ch06_tutorial.md) | implemented 2026-05-01[^ch06-synth] |
-| 7 | Module System | [`ch07/ch07-sources.md`](ch07/ch07-sources.md) | planned |
+| 7 | Module System | [`ch07/ch07_tutorial.md`](ch07/ch07_tutorial.md) | pending review (2026-05-02)[^ch07-derivation] |
 | 8 | The Grassroots Social Graph | [`ch08/ch08-sources.md`](ch08/ch08-sources.md) | planned |
 | 9 | Social Networks | [`ch09/ch09-sources.md`](ch09/ch09-sources.md) | planned |
 | 10 | Interlaced Streams | [`ch10/ch10-sources.md`](ch10/ch10-sources.md) | planned |
@@ -37,7 +37,7 @@ This produces a single binary (`.exe` on Windows; unsuffixed on Linux/macOS) at 
 
 ## How to use this tutorial
 
-The tutorial is **section-driven for chapters 1–6**: each substantial Program from the book has its own `.glp` file, with `%%` paraphrase comments tied to the surrounding prose paragraphs. From chapter 7 onward, it's **use-case-driven**: each chapter has one or more project subdirectories with the multi-actor `{self.glp, agent.glp, network.glp, actors.glp, boot.glp}` shape paired with a Flutter `main_olamni_chNN_<use-case>.dart` entry point.
+The tutorial is **section-driven for chapters 1–6**: each substantial Program from the book has its own `.glp` file, with `%%` paraphrase comments tied to the surrounding prose paragraphs. From chapter 7 onward, it's **use-case-driven**[^ch07-transition]: each chapter has one or more project subdirectories with the multi-actor `{self.glp, agent.glp, network.glp, actors.glp, boot.glp}` shape paired with a Flutter `main_olamni_chNN_<use-case>.dart` entry point.
 
 Per-chapter tutorial pages (`chNN_tutorial.md`) signpost the exercises within their chapter and carry a date-stamped status block tracking approval state per exercise. Each exercise lives in its own folder (`exercise-01/`, `exercise-02/`, …) and contains a `.glp` source file, a step-through guide, and a captured REPL trace.
 
@@ -51,3 +51,7 @@ The full design rationale lives in [`charter.md`](charter.md). The project Const
 - **stub in PDF** — the book chapter itself has only headings; tutorial cannot proceed until source content is available.
 
 [^ch06-synth]: ch06 content is synthesised from ch01–ch05 sources per /speckit-clarify Q1 — the ch06 PDF chapter (book p 53) is a stub containing only the chapter title, a one-line intro, and the five §6.x section headings (no body text, no native Programs). See `ch06/ch06_tutorial.md` for the per-exercise synthesis source map.
+
+[^ch07-derivation]: ch07 is the transition chapter to use-case-driven multimodule projects per charter §2.2; cluster B's `cssg-modules/` is byte-exact-equivalent to `programs/cssg_modules/` enforced by Section R of `test/run_all_tests.sh`. Cluster A's `simple-multimodule/` is the same canonical pruned to 3-agent friend-mediated plays for a smaller §7.1–§7.6 mechanics demonstration; cluster B is the byte-exact §7.7 validation example.
+
+[^ch07-transition]: ch07 is the concrete transition example. Cluster A (`olamni/tutorial/ch07/simple-multimodule/`) demonstrates §7.1–§7.6 module-system mechanics on a 3-agent footprint; cluster B (`olamni/tutorial/ch07/cssg-modules/`) is the byte-exact §7.7 CSSG validation example. Both clusters pair with Flutter mains under `glp_multiagent/lib/main_olamni_ch07_*.dart` per charter §2.2.
