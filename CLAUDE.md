@@ -680,3 +680,8 @@ Constitution governing this feature: [`.specify/memory/constitution.md`](.specif
 
 Workflow memory for replicating this on ch08–ch13: [`memory/olamni_tutorial_chapter_workflow.md`](memory/olamni_tutorial_chapter_workflow.md) (in the Claude memory dir).
 <!-- SPECKIT END -->
+
+<!-- BUILDKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- BUILDKIT END -->

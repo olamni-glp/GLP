@@ -1,0 +1,15 @@
+{
+  "applied": [
+    {
+      "applied_lines": 0,
+      "file_name": "gavriellas__glp__20260703T013605Z.json",
+      "file_sha256": "d6c0b95269a01550e3315a0c34fdd9fbcc219b4a7e785d9d9830fe96dbcea921",
+      "imported_at": "2026-07-03T01:36:08.110000+00:00",
+      "line_count": 0,
+      "source_host": "gavriellas",
+      "source_repo": "glp",
+      "status": "applied"
+    }
+  ],
+  "schema_version": "1"
+}

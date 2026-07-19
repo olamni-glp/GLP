@@ -1,4 +1,8 @@
 ---
+# SPDX-FileCopyrightText: Copyright (c) 2026 by Marcelle Kress von Wendland, The Olamni Research Group and Bancstreet Capital Partners Ltd, London, UK
+#
+# SPDX-License-Identifier: MIT
+# buildkit-file-id: 04cf9466-9a14-4ffc-b1b4-967065e4eb0f
 
 description: "Task list template for feature implementation"
 ---
@@ -7,9 +11,8 @@ description: "Task list template for feature implementation"
 
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
-**Constitution**: `.specify/memory/constitution.md` v1.1.0. Phase 1 (Setup) MUST include a baseline test run per Principle V (Test-First). Tests for any GLP code path MUST exercise SRSW analysis (Principle III). Tasks under `olamni/tutorial/**` MUST cite the relevant `chNN_plan.md` per Principle VI.
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL for general features but MANDATORY where the constitution requires them: every bug fix MUST add a regression test, every new feature MUST add coverage for its main use cases (Principle V). Tests MUST NOT be deleted or marked expected-to-fail to silence a defect.
+**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -30,7 +33,7 @@ description: "Task list template for feature implementation"
   ============================================================================
   IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
   
-  The /speckit-tasks command MUST replace these with actual tasks based on:
+  The /bk-tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
   - Feature requirements from plan.md
   - Entities from data-model.md

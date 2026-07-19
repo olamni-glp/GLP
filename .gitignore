@@ -3,3 +3,5 @@ glp_runtime/glp_repl
 glp_runtime/glp_repl.exe
 glp_runtime/build/
 .DS_Store
+.specify/.deploy-migrated
+.specify/deploy-ledger.jsonl

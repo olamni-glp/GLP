@@ -8,6 +8,14 @@
       "source": "bundled",
       "installed_at": "2026-04-27T18:21:07.892830+00:00",
       "updated_at": "2026-04-27T18:21:07.892847+00:00"
+    },
+    "buildkit": {
+      "name": "Full SDD Cycle",
+      "version": "1.0.0",
+      "description": "Runs specify \u2192 plan \u2192 tasks \u2192 implement with review gates",
+      "source": "bundled",
+      "installed_at": "2026-07-19T13:27:32.214722+00:00",
+      "updated_at": "2026-07-19T13:27:32.214740+00:00"
     }
   }
 }

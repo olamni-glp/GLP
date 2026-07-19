@@ -1,10 +1,16 @@
+<!--
+SPDX-FileCopyrightText: Copyright (c) 2026 by Marcelle Kress von Wendland, The Olamni Research Group and Bancstreet Capital Partners Ltd, London, UK
+
+SPDX-License-Identifier: MIT
+buildkit-file-id: 86d431e3-8849-4b6f-a473-8c268e68529f
+-->
+
 # Feature Specification: [FEATURE NAME]
 
-**Feature Branch**: `[###-feature-name]`
-**Created**: [DATE]
-**Status**: Draft
+**Feature Branch**: `[###-feature-name]`  
+**Created**: [DATE]  
+**Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
-**Constitution**: `.specify/memory/constitution.md` v1.1.0 — every spec MUST be testable against Principles I–VI; Principle I (Spec-First) means this spec must exist before any implementation begins. If this spec touches `olamni/tutorial/**`, Principle VI requires citing `olamni/tutorial/charter.md` and the relevant `chNN_plan.md` in the Assumptions section.
 
 ## User Scenarios & Testing *(mandatory)*
 
