@@ -1,5 +1,5 @@
 ---
-description: "Generate speckit-compliant specs for olamni/tutorial chapters by extracting from GLP_ART.pdf and following the tutorial charter"
+description: "Generate buildkit-compliant specs for olamni/tutorial chapters by extracting from GLP_ART.pdf and following the tutorial charter"
 ---
 
 # Tutorial-Specify Skill
@@ -33,7 +33,7 @@ For each chapter:
    project root (FR-002) — never from model memory or training.
 4. Round-trips every extracted code block through the GLP REPL
    parser; aborts the chapter on parse failure (FR-003a).
-5. Composes a speckit-compliant `spec.md` under
+5. Composes a buildkit-compliant `spec.md` under
    `specs/<NNN>-tutorial-chNN/spec.md`, with citations in the canonical
    `book pp X–Y §A.B[, Program N.N]` format (FR-003).
 6. Writes a checkpoint to `.checkpoint.json` after every meaningful step

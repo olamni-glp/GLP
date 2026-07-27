@@ -1,7 +1,7 @@
 {
   "integration": "claude",
-  "version": "2026.7.14.1",
-  "installed_at": "2026-07-19T13:27:32.027500+00:00",
+  "version": "2026.7.21.1",
+  "installed_at": "2026-07-27T17:37:43.933819+00:00",
   "files": {
     ".claude/skills/bk-analyze/SKILL.md": "0d65dbeb2c92852c03a7a2d441852ffbd3e2103f48015ebfa6ccdb535e52d168",
     ".claude/skills/bk-3rtask/SKILL.md": "4f97d92e7aa3fdcacd9fa91e291eac3cf7d949524178466e3d4d1c1f19fbd1b8",
@@ -32,6 +32,7 @@
     ".claude/skills/bk-release/SKILL.md": "0bfe199ab8b14ac5dc2aa0a16b9df34e930f76cba06c093dcf0cbedfcd1e4cf3",
     ".claude/skills/bk-retrospective/SKILL.md": "2f9bac9c1b15ab5dd37acd0aec4d34ce89777094748819ed0581954c5b1150b9",
     ".claude/skills/bk-roadmap/SKILL.md": "3e93962c556134a1551b522a1326683443c60ef14e6633977d8ae49f19aa4b12",
+    ".claude/skills/bk-scheduler/SKILL.md": "d33342ae2f01827ffd9a4d64ceed55323598e4c23e874241a0e6e5166ec8772b",
     ".claude/skills/bk-ship/SKILL.md": "71d89869a3692798da21fdff240d2e72ec0e7b862e749aa3a995e4b788808696",
     ".claude/skills/bk-size/SKILL.md": "10b300f069fbd12ebf8f302890a9341ce0c2067859722ca86db449dc04a11fdc",
     ".claude/skills/bk-upgrade/SKILL.md": "53d25e5db54f44cf31ef491eb77223671a1b7b89d304c7e47b61882ce78ad9f1",

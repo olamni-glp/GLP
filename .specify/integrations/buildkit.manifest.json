@@ -1,6 +1,6 @@
 {
   "integration": "buildkit",
-  "version": "2026.7.14.1",
+  "version": "2026.7.21.1",
   "installed_at": "2026-07-19T13:27:32.179779+00:00",
   "files": {
     ".specify/scripts/powershell/check-prerequisites.ps1": "3c0d204a46a3e8fbe421b4730f8e692e749c56feac6105b78675bdaab919acfb",
@@ -14,6 +14,7 @@
     ".specify/templates/constitution-template.md": "b812404f2b65a5909e27c05947fd49a317b65325897ba6d67a6ca15df354951e",
     ".specify/templates/plan-template.md": "0dea65f123d0e82ed097b2a81332e50185335bcd38188f08c8ecc00ebbca78ae",
     ".specify/templates/spec-template.md": "d664af76fe4002e401ef0a4f16dac20d8c937fdc3272e7a70fc5b5149d273cb7",
-    ".specify/templates/tasks-template.md": "3c5e97ec490ef26eee3903bf876929ebca6f2d061dc32d55ecc83a5258e9cb25"
+    ".specify/templates/tasks-template.md": "3c5e97ec490ef26eee3903bf876929ebca6f2d061dc32d55ecc83a5258e9cb25",
+    ".specify/templates/vscode-settings.json.license": "247fcaacd18dbc011dd72cf48c6d4222efa806d508d70aea17aeb763320d7871"
   }
 }

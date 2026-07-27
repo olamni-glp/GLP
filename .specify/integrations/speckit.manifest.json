@@ -1,5 +1,5 @@
 {
-  "integration": "speckit",
+  "integration": "buildkit",
   "version": "0.8.1",
   "installed_at": "2026-04-27T18:21:06.640072+00:00",
   "files": {
